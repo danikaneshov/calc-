@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Смена</title>
+    <title>Смена / Аналитика</title>
     <style>
         :root {
             --bg-color: #000000;
             --text-color: #ffffff;
-            --highlight: #1c1c1e;
+            --highlight: #111111;
+            --muted: #666666;
+            --border: #222222;
             --accent: #ffffff;
-            --muted: #8e8e93;
-            --border: #333333;
         }
 
         body {
@@ -19,42 +19,42 @@
             background-color: var(--bg-color);
             color: var(--text-color);
             margin: 0;
-            padding: 20px;
+            padding: 20px 20px 60px 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
             min-height: 100vh;
-            overflow: hidden;
+            box-sizing: border-box;
             letter-spacing: -0.5px;
         }
 
         h1 {
-            font-size: 28px;
+            font-size: 24px;
             font-weight: 800;
-            margin-bottom: 8px;
+            margin: 10px 0 5px 0;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 2px;
+            width: 100%;
+            max-width: 400px;
         }
 
         .status-badge {
-            background-color: transparent;
-            border: 1px solid var(--border);
-            padding: 6px 16px;
-            border-radius: 4px;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 600;
             text-transform: uppercase;
-            margin-bottom: 40px;
             color: var(--muted);
-        }
-
-        .pickers-wrapper {
-            display: flex;
-            gap: 15px;
             width: 100%;
             max-width: 400px;
-            position: relative;
+            margin-bottom: 30px;
+            letter-spacing: 1px;
+        }
+
+        /* Калькулятор */
+        .pickers-wrapper {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            max-width: 400px;
         }
 
         .picker-column {
@@ -65,30 +65,32 @@
         }
 
         .picker-label {
-            font-size: 14px;
-            margin-bottom: 15px;
+            font-size: 12px;
+            margin-bottom: 10px;
             font-weight: 600;
             text-transform: uppercase;
             color: var(--muted);
+            letter-spacing: 1px;
         }
 
         .picker-container {
-            height: 150px;
+            height: 120px;
             width: 100%;
             position: relative;
             background-color: var(--highlight);
-            border-radius: 8px;
+            border-radius: 4px;
             overflow: hidden;
+            border: 1px solid var(--border);
         }
 
         .picker-container::before {
             content: "";
             position: absolute;
-            top: 50px;
+            top: 40px;
             left: 0;
             right: 0;
-            height: 50px;
-            background-color: rgba(255, 255, 255, 0.05);
+            height: 40px;
+            background-color: rgba(255, 255, 255, 0.03);
             border-top: 1px solid rgba(255,255,255,0.1);
             border-bottom: 1px solid rgba(255,255,255,0.1);
             pointer-events: none;
@@ -106,45 +108,39 @@
             scroll-behavior: smooth;
         }
 
-        .picker::-webkit-scrollbar {
-            display: none;
-        }
-
-        .spacer {
-            height: 50px;
-        }
+        .picker::-webkit-scrollbar { display: none; }
+        .spacer { height: 40px; }
 
         .picker-item {
-            height: 50px;
-            line-height: 50px;
+            height: 40px;
+            line-height: 40px;
             text-align: center;
-            font-size: 20px;
+            font-size: 18px;
             font-weight: 600;
             font-variant-numeric: tabular-nums;
             scroll-snap-align: center;
-            color: #3a3a3c;
+            color: #333;
             transition: all 0.2s ease;
         }
 
         .picker-item.active {
             color: var(--text-color);
-            font-size: 28px;
+            font-size: 24px;
         }
 
+        /* Итоги */
         .result-card {
-            margin-top: 40px;
+            margin-top: 30px;
             width: 100%;
-            max-width: 360px;
-            box-sizing: border-box;
+            max-width: 400px;
         }
 
         .report-row {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            padding: 12px 0;
-            font-size: 16px;
-            font-weight: 500;
+            align-items: flex-end;
+            padding: 8px 0;
+            font-size: 14px;
             color: var(--muted);
         }
 
@@ -156,30 +152,120 @@
 
         .divider {
             border: none;
-            border-top: 1px dashed var(--border);
-            margin: 5px 0;
+            border-top: 1px solid var(--border);
+            margin: 15px 0;
         }
 
-        .total-row {
-            font-size: 24px;
-            color: var(--text-color);
-            padding-top: 15px;
-        }
+        .total-row span:first-child { font-weight: 800; text-transform: uppercase; color: var(--text-color); }
+        .total-price { font-size: 28px; font-weight: 800; }
 
-        .total-row span:first-child {
+        .save-btn {
+            width: 100%;
+            padding: 15px;
+            margin-top: 20px;
+            background-color: var(--text-color);
+            color: var(--bg-color);
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
             font-weight: 800;
             text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .save-btn:active { opacity: 0.7; }
+
+        /* Аналитика */
+        .analytics-section {
+            width: 100%;
+            max-width: 400px;
+            margin-top: 50px;
         }
 
-        .total-price {
-            font-size: 32px;
-            font-weight: 800;
+        .filters {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
         }
 
-        .breakdown {
-            font-size: 12px;
+        .filter-btn {
+            flex: 1;
+            padding: 8px 0;
+            background: transparent;
+            border: 1px solid var(--border);
             color: var(--muted);
-            text-align: right;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .filter-btn.active {
+            background: var(--border);
+            color: var(--text-color);
+            border-color: var(--muted);
+        }
+
+        .date-inputs {
+            display: flex;
+            gap: 5px;
+            width: 100%;
+            margin-top: 5px;
+        }
+        
+        .date-inputs input {
+            flex: 1;
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-color);
+            padding: 8px;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 12px;
+            color-scheme: dark;
+        }
+
+        /* График */
+        .chart {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            height: 100px;
+            margin-bottom: 20px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid var(--border);
+            gap: 4px;
+        }
+
+        .bar-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            height: 100%;
+            position: relative;
+            group: bar;
+        }
+
+        .bar {
+            width: 100%;
+            max-width: 20px;
+            background-color: var(--muted);
+            border-radius: 2px 2px 0 0;
+            transition: height 0.3s ease, background-color 0.3s;
+        }
+
+        .bar-wrapper:last-child .bar {
+            background-color: var(--text-color); /* Последний день выделен */
+        }
+
+        .bar-label {
+            font-size: 9px;
+            color: var(--muted);
             margin-top: 4px;
             font-variant-numeric: tabular-nums;
         }
@@ -194,172 +280,250 @@
     <div class="pickers-wrapper">
         <div class="picker-column">
             <div class="picker-label">Кальяны</div>
-            <div class="picker-container">
-                <div class="picker" id="hookah-picker">
-                    <div class="spacer" id="h-spacer-top"></div>
-                    <div class="spacer"></div>
-                </div>
-            </div>
+            <div class="picker-container"><div class="picker" id="hookah-picker"><div class="spacer"></div><div class="spacer"></div></div></div>
         </div>
-
         <div class="picker-column">
             <div class="picker-label">Замены</div>
-            <div class="picker-container">
-                <div class="picker" id="replacement-picker">
-                    <div class="spacer" id="r-spacer-top"></div>
-                    <div class="spacer"></div>
-                </div>
-            </div>
+            <div class="picker-container"><div class="picker" id="replacement-picker"><div class="spacer"></div><div class="spacer"></div></div></div>
         </div>
     </div>
 
     <div class="result-card">
-        <div class="report-row">
-            <span>Оклад</span>
-            <span>7 000 ₸</span>
+        <div class="report-row"><span>Оклад</span><span>7 000 ₸</span></div>
+        <div class="report-row"><span>Процент (10%)</span><span id="bonus-price">0 ₸</span></div>
+        <div class="divider"></div>
+        <div class="report-row total-row"><span>Итого</span><span class="total-price" id="total-price">7 000 ₸</span></div>
+        <button class="save-btn" onclick="saveCurrentShift()">Сохранить смену</button>
+    </div>
+
+    <div class="analytics-section">
+        <h1>Аналитика</h1>
+        
+        <div class="filters">
+            <button class="filter-btn active" onclick="setFilter('3', this)">3 дня</button>
+            <button class="filter-btn" onclick="setFilter('7', this)">Неделя</button>
+            <button class="filter-btn" onclick="setFilter('30', this)">Месяц</button>
+            <button class="filter-btn" onclick="setFilter('custom', this)">Период</button>
         </div>
-        <div class="report-row">
-            <span>10% (Кальяны + Замены)</span>
-            <span id="bonus-price">0 ₸</span>
+        
+        <div class="date-inputs" id="custom-dates" style="display: none;">
+            <input type="date" id="date-start" onchange="generateReport()">
+            <input type="date" id="date-end" onchange="generateReport()">
         </div>
-        <div class="breakdown" id="price-breakdown">
-            (0 ₸ + 0 ₸)
-        </div>
-        <hr class="divider">
-        <div class="report-row total-row">
-            <span>Итого</span>
-            <span class="total-price" id="total-price">7 000 ₸</span>
+
+        <div class="chart" id="trend-chart">
+            </div>
+
+        <div class="result-card" style="margin-top: 0;">
+            <div class="report-row"><span>Смен отработано</span><span id="stat-shifts">0</span></div>
+            <div class="report-row"><span>Сделано кальянов</span><span id="stat-hookahs">0</span></div>
+            <div class="divider"></div>
+            <div class="report-row total-row"><span>Общий доход</span><span id="stat-total" style="font-size: 22px;">0 ₸</span></div>
         </div>
     </div>
 
     <script>
         const MAX_VALUE = 25;
-        const REPEATS = 60; // Количество повторений цикла 0-25 для эффекта бесконечности
-        const ITEM_HEIGHT = 50;
+        const REPEATS = 60;
+        const ITEM_HEIGHT = 40;
         const BASE_SALARY = 7000;
+        const STORAGE_KEY = 'shift_stats_db';
 
-        const hookahPicker = document.getElementById('hookah-picker');
-        const replacementPicker = document.getElementById('replacement-picker');
-        
         let hookahCount = 0;
         let replacementCount = 0;
-
         let currentHookahPrice = 0;
         let currentReplacementPrice = 0;
+        let finalSum = 0;
+        let shiftDateStr = "";
+        let currentFilter = '3';
 
-        // Генерация циклических списков
-        function populatePicker(picker) {
-            const spacerBottom = picker.lastElementChild;
-            for (let r = 0; r < REPEATS; r++) {
-                for (let i = 0; i <= MAX_VALUE; i++) {
-                    const div = document.createElement('div');
-                    div.className = 'picker-item';
-                    div.dataset.value = i; // Сохраняем реальное значение от 0 до 25
-                    div.textContent = i;
-                    picker.insertBefore(div, spacerBottom);
+        const fmt = (num) => num.toLocaleString('ru-RU');
+
+        // --- ЛОГИКА КАЛЬКУЛЯТОРА ---
+        function initPickers() {
+            const hPicker = document.getElementById('hookah-picker');
+            const rPicker = document.getElementById('replacement-picker');
+            
+            [hPicker, rPicker].forEach(picker => {
+                const spacerBottom = picker.lastElementChild;
+                for (let r = 0; r < REPEATS; r++) {
+                    for (let i = 0; i <= MAX_VALUE; i++) {
+                        const div = document.createElement('div');
+                        div.className = 'picker-item';
+                        div.dataset.value = i;
+                        div.textContent = i;
+                        picker.insertBefore(div, spacerBottom);
+                    }
                 }
-            }
-        }
+                picker.style.scrollBehavior = 'auto';
+                picker.scrollTop = Math.floor(REPEATS / 2) * (MAX_VALUE + 1) * ITEM_HEIGHT;
+                setTimeout(() => picker.style.scrollBehavior = 'smooth', 50);
+            });
 
-        populatePicker(hookahPicker);
-        populatePicker(replacementPicker);
-
-        // Установка начального положения ровно в середину "бесконечного" списка
-        function setInitialScroll(picker) {
-            // Отключаем плавную прокрутку на момент инициализации, чтобы не было анимации прыжка
-            picker.style.scrollBehavior = 'auto';
-            
-            // Высчитываем индекс элемента, который находится на середине массива повторений (где значение = 0)
-            const middleSet = Math.floor(REPEATS / 2); 
-            const startIndex = middleSet * (MAX_VALUE + 1); 
-            
-            picker.scrollTop = startIndex * ITEM_HEIGHT;
-            
-            // Включаем обратно (небольшая задержка, чтобы браузер успел применить auto)
-            setTimeout(() => {
-                picker.style.scrollBehavior = 'smooth';
-            }, 50);
-        }
-
-        function updateShiftPricing() {
-            const now = new Date();
-            let day = now.getDay();
-            let hour = now.getHours();
-
-            if (hour < 15) {
-                day = day - 1;
-                if (day < 0) day = 6;
-            }
-
-            const isWeekend = (day === 5 || day === 6 || day === 0);
-
-            if (isWeekend) {
-                currentHookahPrice = 7900;
-                currentReplacementPrice = 5900;
-            } else {
-                currentHookahPrice = 4900;
-                currentReplacementPrice = 4490;
-            }
-
-            const days = ["ВС", "ПН", "ВТ", "СР", "ЧТ", "ПТ", "СБ"];
-            document.getElementById('shift-status').textContent = `Смена: ${days[day]} / ${isWeekend ? 'ВЫХОДНОЙ' : 'БУДНИЙ'}`;
-        }
-
-        function calculateTotal() {
-            // Считаем 10% от стоимости
-            const bonusHookah = Math.round(hookahCount * (currentHookahPrice * 0.10));
-            const bonusReplacement = Math.round(replacementCount * (currentReplacementPrice * 0.10));
-            
-            const totalBonus = bonusHookah + bonusReplacement;
-            const finalSum = BASE_SALARY + totalBonus;
-
-            const fmt = (num) => num.toLocaleString('ru-RU');
-
-            document.getElementById('bonus-price').textContent = fmt(totalBonus) + ' ₸';
-            document.getElementById('price-breakdown').textContent = `(${fmt(bonusHookah)} ₸ + ${fmt(bonusReplacement)} ₸)`;
-            document.getElementById('total-price').textContent = fmt(finalSum) + ' ₸';
+            hPicker.addEventListener('scroll', () => handleScroll(hPicker, 'hookah'));
+            rPicker.addEventListener('scroll', () => handleScroll(rPicker, 'replacement'));
         }
 
         function handleScroll(picker, type) {
-            const scrollTop = picker.scrollTop;
-            const index = Math.round(scrollTop / ITEM_HEIGHT);
-            
+            const index = Math.round(picker.scrollTop / ITEM_HEIGHT);
             const items = picker.querySelectorAll('.picker-item');
-            
-            // Снимаем класс со всех и вешаем на активный
             items.forEach(item => item.classList.remove('active'));
             
             if (items[index]) {
                 items[index].classList.add('active');
-                
-                // Берем реальное значение от 0 до 25
-                const realValue = parseInt(items[index].dataset.value);
-                
-                if (type === 'hookah') {
-                    hookahCount = realValue;
-                } else {
-                    replacementCount = realValue;
-                }
-                
+                const val = parseInt(items[index].dataset.value);
+                type === 'hookah' ? hookahCount = val : replacementCount = val;
                 calculateTotal();
             }
         }
 
-        hookahPicker.addEventListener('scroll', () => handleScroll(hookahPicker, 'hookah'));
-        replacementPicker.addEventListener('scroll', () => handleScroll(replacementPicker, 'replacement'));
+        function getShiftDate() {
+            const now = new Date();
+            if (now.getHours() < 15) now.setDate(now.getDate() - 1); // До 15:00 - вчерашняя смена
+            return now;
+        }
 
+        function updateShiftPricing() {
+            const shiftDate = getShiftDate();
+            const day = shiftDate.getDay();
+            
+            // Форматируем дату для базы (YYYY-MM-DD)
+            shiftDateStr = shiftDate.toISOString().split('T')[0];
+
+            const isWeekend = (day === 5 || day === 6 || day === 0); // ПТ, СБ, ВС
+            currentHookahPrice = isWeekend ? 7900 : 4900;
+            currentReplacementPrice = isWeekend ? 5900 : 4490;
+
+            const days = ["ВС", "ПН", "ВТ", "СР", "ЧТ", "ПТ", "СБ"];
+            document.getElementById('shift-status').textContent = `${shiftDateStr} | ${days[day]} | ${isWeekend ? 'ВЫХОДНОЙ' : 'БУДНИЙ'} ТАРИФ`;
+        }
+
+        function calculateTotal() {
+            const bonus = Math.round((hookahCount * currentHookahPrice + replacementCount * currentReplacementPrice) * 0.10);
+            finalSum = BASE_SALARY + bonus;
+            document.getElementById('bonus-price').textContent = fmt(bonus) + ' ₸';
+            document.getElementById('total-price').textContent = fmt(finalSum) + ' ₸';
+        }
+
+        // --- ЛОГИКА БАЗЫ ДАННЫХ И ОТЧЕТОВ ---
+        function getDB() {
+            return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+        }
+
+        function saveCurrentShift() {
+            const db = getDB();
+            db[shiftDateStr] = {
+                total: finalSum,
+                hookahs: hookahCount,
+                replacements: replacementCount,
+                timestamp: new Date().getTime()
+            };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+            
+            const btn = document.querySelector('.save-btn');
+            btn.textContent = "СОХРАНЕНО!";
+            btn.style.backgroundColor = "#4caf50";
+            setTimeout(() => {
+                btn.textContent = "СОХРАНИТЬ СМЕНУ";
+                btn.style.backgroundColor = "var(--text-color)";
+            }, 2000);
+
+            generateReport(); // Обновляем график
+        }
+
+        function setFilter(type, btnObj) {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btnObj.classList.add('active');
+            currentFilter = type;
+            
+            document.getElementById('custom-dates').style.display = type === 'custom' ? 'flex' : 'none';
+            if(type !== 'custom') generateReport();
+        }
+
+        function generateReport() {
+            const db = getDB();
+            const dates = Object.keys(db).sort();
+            if (dates.length === 0) return;
+
+            let targetDates = [];
+            const today = getShiftDate();
+            today.setHours(0,0,0,0);
+
+            if (currentFilter === 'custom') {
+                const start = document.getElementById('date-start').value;
+                const end = document.getElementById('date-end').value;
+                if (!start || !end) return;
+                targetDates = dates.filter(d => d >= start && d <= end);
+            } else {
+                const daysBack = parseInt(currentFilter);
+                for(let i = daysBack - 1; i >= 0; i--) {
+                    const d = new Date(today);
+                    d.setDate(d.getDate() - i);
+                    targetDates.push(d.toISOString().split('T')[0]);
+                }
+            }
+
+            renderStatsAndChart(targetDates, db);
+        }
+
+        function renderStatsAndChart(dates, db) {
+            let sumTotal = 0;
+            let sumHookahs = 0;
+            let shiftsWorked = 0;
+            let maxDailyTotal = 1; // защита от деления на 0
+
+            // Считаем общую стату
+            dates.forEach(date => {
+                if(db[date]) {
+                    shiftsWorked++;
+                    sumTotal += db[date].total;
+                    sumHookahs += db[date].hookahs;
+                    if(db[date].total > maxDailyTotal) maxDailyTotal = db[date].total;
+                }
+            });
+
+            document.getElementById('stat-shifts').textContent = shiftsWorked;
+            document.getElementById('stat-hookahs').textContent = sumHookahs;
+            document.getElementById('stat-total').textContent = fmt(sumTotal) + ' ₸';
+
+            // Отрисовка графика
+            const chartArea = document.getElementById('trend-chart');
+            chartArea.innerHTML = '';
+
+            dates.forEach(date => {
+                const dayData = db[date] || { total: 0 };
+                const heightPercent = (dayData.total / maxDailyTotal) * 100;
+                
+                // Берем короткую дату (число)
+                const shortDate = date.split('-')[2];
+
+                const barWrap = document.createElement('div');
+                barWrap.className = 'bar-wrapper';
+                barWrap.innerHTML = `
+                    <div class="bar" style="height: ${heightPercent}%"></div>
+                    <div class="bar-label">${shortDate}</div>
+                `;
+                chartArea.appendChild(barWrap);
+            });
+        }
+
+        // Инициализация
+        initPickers();
         updateShiftPricing();
-        
-        // Ставим колеса в позицию "0" на середине списка
-        setInitialScroll(hookahPicker);
-        setInitialScroll(replacementPicker);
-
-        // Даем браузеру отрендерить скролл и делаем первичный подсчет
         setTimeout(() => {
-            handleScroll(hookahPicker, 'hookah');
-            handleScroll(replacementPicker, 'replacement');
+            handleScroll(document.getElementById('hookah-picker'), 'hookah');
+            handleScroll(document.getElementById('replacement-picker'), 'replacement');
         }, 100);
 
+        // Ставим дефолтные даты в кастомный фильтр (текущий месяц)
+        const dEnd = getShiftDate();
+        const dStart = new Date(dEnd.getFullYear(), dEnd.getMonth(), 1);
+        document.getElementById('date-end').value = dEnd.toISOString().split('T')[0];
+        document.getElementById('date-start').value = dStart.toISOString().split('T')[0];
+
+        generateReport();
+
+        // Обновление цен при переходе времени
         setInterval(() => {
             updateShiftPricing();
             calculateTotal();
