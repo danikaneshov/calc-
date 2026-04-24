@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Калькулятор Смены</title>
+    <style>
+        :root {
+            --bg-color: #000000;
+            --text-color: #ffffff;
+            --highlight: #1c1c1e;
+            --accent: #ffffff;
+            --muted: #8e8e93;
+            --border: #333333;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+            letter-spacing: -0.5px;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .status-badge {
+            background-color: transparent;
+            border: 1px solid var(--border);
+            padding: 6px 16px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 40px;
+            color: var(--muted);
+        }
+
+        .pickers-wrapper {
+            display: flex;
+            gap: 15px;
+            width: 100%;
+            max-width: 400px;
+            position: relative;
+        }
+
+        .picker-column {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .picker-label {
+            font-size: 14px;
+            margin-bottom: 15px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+
+        .picker-container {
+            height: 150px;
+            width: 100%;
+            position: relative;
+            background-color: var(--highlight);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .picker-container::before {
+            content: "";
+            position: absolute;
+            top: 50px;
+            left: 0;
+            right: 0;
+            height: 50px;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-top: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .picker {
+            height: 100%;
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            position: relative;
+            z-index: 1;
+        }
+
+        .picker::-webkit-scrollbar {
+            display: none;
+        }
+
+        .spacer {
+            height: 50px;
+        }
+
+        .picker-item {
+            height: 50px;
+            line-height: 50px;
+            text-align: center;
+            font-size: 20px;
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+            scroll-snap-align: center;
+            color: #3a3a3c;
+            transition: all 0.2s ease;
+        }
+
+        .picker-item.active {
+            color: var(--text-color);
+            font-size: 28px;
+        }
+
+        /* Ультра-минималистичный отчет */
+        .result-card {
+            margin-top: 40px;
+            width: 100%;
+            max-width: 360px;
+            box-sizing: border-box;
+        }
+
+        .report-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--muted);
+        }
+
+        .report-row span:last-child {
+            font-weight: 600;
+            color: var(--text-color);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .divider {
+            border: none;
+            border-top: 1px dashed var(--border);
+            margin: 5px 0;
+        }
+
+        .total-row {
+            font-size: 24px;
+            color: var(--text-color);
+            padding-top: 15px;
+        }
+
+        .total-row span:first-child {
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .total-price {
+            font-size: 32px;
+            font-weight: 800;
+        }
+
+        .breakdown {
+            font-size: 12px;
+            color: var(--muted);
+            text-align: right;
+            margin-top: 4px;
+            font-variant-numeric: tabular-nums;
+        }
+
+    </style>
+</head>
+<body>
+
+    <h1>Смена</h1>
+    <div class="status-badge" id="shift-status">Загрузка...</div>
+
+    <div class="pickers-wrapper">
+        <div class="picker-column">
+            <div class="picker-label">Кальяны</div>
+            <div class="picker-container">
+                <div class="picker" id="hookah-picker">
+                    <div class="spacer"></div>
+                    <div class="spacer"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="picker-column">
+            <div class="picker-label">Замены</div>
+            <div class="picker-container">
+                <div class="picker" id="replacement-picker">
+                    <div class="spacer"></div>
+                    <div class="spacer"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="result-card">
+        <div class="report-row">
+            <span>Оклад</span>
+            <span>7 000 ₸</span>
+        </div>
+        <div class="report-row">
+            <span>Кальяны + Замены</span>
+            <span id="bonus-price">0 ₸</span>
+        </div>
+        <div class="breakdown" id="price-breakdown">
+            (0 ₸ + 0 ₸)
+        </div>
+        <hr class="divider">
+        <div class="report-row total-row">
+            <span>Итого</span>
+            <span class="total-price" id="total-price">7 000 ₸</span>
+        </div>
+    </div>
+
+    <script>
+        const MAX_ITEMS = 25;
+        const ITEM_HEIGHT = 50;
+        const BASE_SALARY = 7000;
+
+        const hookahPicker = document.getElementById('hookah-picker');
+        const replacementPicker = document.getElementById('replacement-picker');
+        
+        let hookahCount = 0;
+        let replacementCount = 0;
+
+        let currentHookahPrice = 0;
+        let currentReplacementPrice = 0;
+
+        function populatePicker(picker) {
+            const spacerBottom = picker.lastElementChild;
+            for (let i = 0; i <= MAX_ITEMS; i++) {
+                const div = document.createElement('div');
+                div.className = 'picker-item';
+                div.textContent = i;
+                picker.insertBefore(div, spacerBottom);
+            }
+        }
+
+        populatePicker(hookahPicker);
+        populatePicker(replacementPicker);
+
+        function updateShiftPricing() {
+            const now = new Date();
+            let day = now.getDay();
+            let hour = now.getHours();
+
+            if (hour < 15) {
+                day = day - 1;
+                if (day < 0) day = 6;
+            }
+
+            const isWeekend = (day === 5 || day === 6 || day === 0);
+
+            if (isWeekend) {
+                currentHookahPrice = 7900;
+                currentReplacementPrice = 5900;
+            } else {
+                currentHookahPrice = 4900;
+                currentReplacementPrice = 4490;
+            }
+
+            const days = ["ВС", "ПН", "ВТ", "СР", "ЧТ", "ПТ", "СБ"];
+            document.getElementById('shift-status').textContent = `Смена: ${days[day]} / ${isWeekend ? 'ВЫХОДНОЙ' : 'БУДНИЙ'}`;
+        }
+
+        function calculateTotal() {
+            const totalHookah = hookahCount * currentHookahPrice;
+            const totalReplacement = replacementCount * currentReplacementPrice;
+            const totalBonus = totalHookah + totalReplacement;
+            const finalSum = BASE_SALARY + totalBonus;
+
+            // Форматирование чисел с пробелами
+            const fmt = (num) => num.toLocaleString('ru-RU');
+
+            document.getElementById('bonus-price').textContent = fmt(totalBonus) + ' ₸';
+            document.getElementById('price-breakdown').textContent = `(${fmt(totalHookah)} ₸ кальяны + ${fmt(totalReplacement)} ₸ замены)`;
+            document.getElementById('total-price').textContent = fmt(finalSum) + ' ₸';
+        }
+
+        function handleScroll(picker, type) {
+            const scrollTop = picker.scrollTop;
+            const index = Math.round(scrollTop / ITEM_HEIGHT);
+            const safeIndex = Math.max(0, Math.min(index, MAX_ITEMS));
+
+            const items = picker.querySelectorAll('.picker-item');
+            items.forEach((item, i) => {
+                if (i === safeIndex) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+
+            if (type === 'hookah') {
+                hookahCount = safeIndex;
+            } else {
+                replacementCount = safeIndex;
+            }
+            
+            calculateTotal();
+        }
+
+        hookahPicker.addEventListener('scroll', () => handleScroll(hookahPicker, 'hookah'));
+        replacementPicker.addEventListener('scroll', () => handleScroll(replacementPicker, 'replacement'));
+
+        updateShiftPricing();
+        handleScroll(hookahPicker, 'hookah');
+        handleScroll(replacementPicker, 'replacement');
+
+        setInterval(() => {
+            updateShiftPricing();
+            calculateTotal();
+        }, 60000);
+
+    </script>
+</body>
+</html>
