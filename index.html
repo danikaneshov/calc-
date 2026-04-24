@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Калькулятор Смены</title>
+    <title>Смена</title>
     <style>
         :root {
             --bg-color: #000000;
@@ -103,6 +103,7 @@
             -ms-overflow-style: none;
             position: relative;
             z-index: 1;
+            scroll-behavior: smooth;
         }
 
         .picker::-webkit-scrollbar {
@@ -130,7 +131,6 @@
             font-size: 28px;
         }
 
-        /* Ультра-минималистичный отчет */
         .result-card {
             margin-top: 40px;
             width: 100%;
@@ -196,7 +196,7 @@
             <div class="picker-label">Кальяны</div>
             <div class="picker-container">
                 <div class="picker" id="hookah-picker">
-                    <div class="spacer"></div>
+                    <div class="spacer" id="h-spacer-top"></div>
                     <div class="spacer"></div>
                 </div>
             </div>
@@ -206,7 +206,7 @@
             <div class="picker-label">Замены</div>
             <div class="picker-container">
                 <div class="picker" id="replacement-picker">
-                    <div class="spacer"></div>
+                    <div class="spacer" id="r-spacer-top"></div>
                     <div class="spacer"></div>
                 </div>
             </div>
@@ -219,7 +219,7 @@
             <span>7 000 ₸</span>
         </div>
         <div class="report-row">
-            <span>Кальяны + Замены</span>
+            <span>10% (Кальяны + Замены)</span>
             <span id="bonus-price">0 ₸</span>
         </div>
         <div class="breakdown" id="price-breakdown">
@@ -233,7 +233,8 @@
     </div>
 
     <script>
-        const MAX_ITEMS = 25;
+        const MAX_VALUE = 25;
+        const REPEATS = 60; // Количество повторений цикла 0-25 для эффекта бесконечности
         const ITEM_HEIGHT = 50;
         const BASE_SALARY = 7000;
 
@@ -246,18 +247,39 @@
         let currentHookahPrice = 0;
         let currentReplacementPrice = 0;
 
+        // Генерация циклических списков
         function populatePicker(picker) {
             const spacerBottom = picker.lastElementChild;
-            for (let i = 0; i <= MAX_ITEMS; i++) {
-                const div = document.createElement('div');
-                div.className = 'picker-item';
-                div.textContent = i;
-                picker.insertBefore(div, spacerBottom);
+            for (let r = 0; r < REPEATS; r++) {
+                for (let i = 0; i <= MAX_VALUE; i++) {
+                    const div = document.createElement('div');
+                    div.className = 'picker-item';
+                    div.dataset.value = i; // Сохраняем реальное значение от 0 до 25
+                    div.textContent = i;
+                    picker.insertBefore(div, spacerBottom);
+                }
             }
         }
 
         populatePicker(hookahPicker);
         populatePicker(replacementPicker);
+
+        // Установка начального положения ровно в середину "бесконечного" списка
+        function setInitialScroll(picker) {
+            // Отключаем плавную прокрутку на момент инициализации, чтобы не было анимации прыжка
+            picker.style.scrollBehavior = 'auto';
+            
+            // Высчитываем индекс элемента, который находится на середине массива повторений (где значение = 0)
+            const middleSet = Math.floor(REPEATS / 2); 
+            const startIndex = middleSet * (MAX_VALUE + 1); 
+            
+            picker.scrollTop = startIndex * ITEM_HEIGHT;
+            
+            // Включаем обратно (небольшая задержка, чтобы браузер успел применить auto)
+            setTimeout(() => {
+                picker.style.scrollBehavior = 'smooth';
+            }, 50);
+        }
 
         function updateShiftPricing() {
             const now = new Date();
@@ -284,48 +306,59 @@
         }
 
         function calculateTotal() {
-            const totalHookah = hookahCount * currentHookahPrice;
-            const totalReplacement = replacementCount * currentReplacementPrice;
-            const totalBonus = totalHookah + totalReplacement;
+            // Считаем 10% от стоимости
+            const bonusHookah = Math.round(hookahCount * (currentHookahPrice * 0.10));
+            const bonusReplacement = Math.round(replacementCount * (currentReplacementPrice * 0.10));
+            
+            const totalBonus = bonusHookah + bonusReplacement;
             const finalSum = BASE_SALARY + totalBonus;
 
-            // Форматирование чисел с пробелами
             const fmt = (num) => num.toLocaleString('ru-RU');
 
             document.getElementById('bonus-price').textContent = fmt(totalBonus) + ' ₸';
-            document.getElementById('price-breakdown').textContent = `(${fmt(totalHookah)} ₸ кальяны + ${fmt(totalReplacement)} ₸ замены)`;
+            document.getElementById('price-breakdown').textContent = `(${fmt(bonusHookah)} ₸ + ${fmt(bonusReplacement)} ₸)`;
             document.getElementById('total-price').textContent = fmt(finalSum) + ' ₸';
         }
 
         function handleScroll(picker, type) {
             const scrollTop = picker.scrollTop;
             const index = Math.round(scrollTop / ITEM_HEIGHT);
-            const safeIndex = Math.max(0, Math.min(index, MAX_ITEMS));
-
-            const items = picker.querySelectorAll('.picker-item');
-            items.forEach((item, i) => {
-                if (i === safeIndex) {
-                    item.classList.add('active');
-                } else {
-                    item.classList.remove('active');
-                }
-            });
-
-            if (type === 'hookah') {
-                hookahCount = safeIndex;
-            } else {
-                replacementCount = safeIndex;
-            }
             
-            calculateTotal();
+            const items = picker.querySelectorAll('.picker-item');
+            
+            // Снимаем класс со всех и вешаем на активный
+            items.forEach(item => item.classList.remove('active'));
+            
+            if (items[index]) {
+                items[index].classList.add('active');
+                
+                // Берем реальное значение от 0 до 25
+                const realValue = parseInt(items[index].dataset.value);
+                
+                if (type === 'hookah') {
+                    hookahCount = realValue;
+                } else {
+                    replacementCount = realValue;
+                }
+                
+                calculateTotal();
+            }
         }
 
         hookahPicker.addEventListener('scroll', () => handleScroll(hookahPicker, 'hookah'));
         replacementPicker.addEventListener('scroll', () => handleScroll(replacementPicker, 'replacement'));
 
         updateShiftPricing();
-        handleScroll(hookahPicker, 'hookah');
-        handleScroll(replacementPicker, 'replacement');
+        
+        // Ставим колеса в позицию "0" на середине списка
+        setInitialScroll(hookahPicker);
+        setInitialScroll(replacementPicker);
+
+        // Даем браузеру отрендерить скролл и делаем первичный подсчет
+        setTimeout(() => {
+            handleScroll(hookahPicker, 'hookah');
+            handleScroll(replacementPicker, 'replacement');
+        }, 100);
 
         setInterval(() => {
             updateShiftPricing();
