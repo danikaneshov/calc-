@@ -192,11 +192,11 @@
 
         .filter-btn {
             flex: 1;
-            padding: 8px 0;
+            padding: 8px 2px;
             background: transparent;
             border: 1px solid var(--border);
             color: var(--muted);
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 600;
             text-transform: uppercase;
             border-radius: 4px;
@@ -248,7 +248,6 @@
             align-items: center;
             height: 100%;
             position: relative;
-            group: bar;
         }
 
         .bar {
@@ -260,7 +259,7 @@
         }
 
         .bar-wrapper:last-child .bar {
-            background-color: var(--text-color); /* Последний день выделен */
+            background-color: var(--text-color);
         }
 
         .bar-label {
@@ -303,6 +302,7 @@
             <button class="filter-btn active" onclick="setFilter('3', this)">3 дня</button>
             <button class="filter-btn" onclick="setFilter('7', this)">Неделя</button>
             <button class="filter-btn" onclick="setFilter('30', this)">Месяц</button>
+            <button class="filter-btn" onclick="setFilter('all', this)">Все</button>
             <button class="filter-btn" onclick="setFilter('custom', this)">Период</button>
         </div>
         
@@ -317,7 +317,14 @@
         <div class="result-card" style="margin-top: 0;">
             <div class="report-row"><span>Смен отработано</span><span id="stat-shifts">0</span></div>
             <div class="report-row"><span>Сделано кальянов</span><span id="stat-hookahs">0</span></div>
+            
             <div class="divider"></div>
+            
+            <div class="report-row"><span>Чисто окладом</span><span id="stat-base">0 ₸</span></div>
+            <div class="report-row"><span>Чисто процентами</span><span id="stat-bonus">0 ₸</span></div>
+            
+            <div class="divider"></div>
+            
             <div class="report-row total-row"><span>Общий доход</span><span id="stat-total" style="font-size: 22px;">0 ₸</span></div>
         </div>
     </div>
@@ -379,7 +386,7 @@
 
         function getShiftDate() {
             const now = new Date();
-            if (now.getHours() < 15) now.setDate(now.getDate() - 1); // До 15:00 - вчерашняя смена
+            if (now.getHours() < 15) now.setDate(now.getDate() - 1); 
             return now;
         }
 
@@ -387,10 +394,9 @@
             const shiftDate = getShiftDate();
             const day = shiftDate.getDay();
             
-            // Форматируем дату для базы (YYYY-MM-DD)
             shiftDateStr = shiftDate.toISOString().split('T')[0];
 
-            const isWeekend = (day === 5 || day === 6 || day === 0); // ПТ, СБ, ВС
+            const isWeekend = (day === 5 || day === 6 || day === 0); 
             currentHookahPrice = isWeekend ? 7900 : 4900;
             currentReplacementPrice = isWeekend ? 5900 : 4490;
 
@@ -428,7 +434,7 @@
                 btn.style.backgroundColor = "var(--text-color)";
             }, 2000);
 
-            generateReport(); // Обновляем график
+            generateReport(); 
         }
 
         function setFilter(type, btnObj) {
@@ -449,7 +455,9 @@
             const today = getShiftDate();
             today.setHours(0,0,0,0);
 
-            if (currentFilter === 'custom') {
+            if (currentFilter === 'all') {
+                targetDates = dates; // Берем вообще все дни из базы
+            } else if (currentFilter === 'custom') {
                 const start = document.getElementById('date-start').value;
                 const end = document.getElementById('date-end').value;
                 if (!start || !end) return;
@@ -468,15 +476,18 @@
 
         function renderStatsAndChart(dates, db) {
             let sumTotal = 0;
+            let sumBase = 0;
+            let sumBonus = 0;
             let sumHookahs = 0;
             let shiftsWorked = 0;
-            let maxDailyTotal = 1; // защита от деления на 0
+            let maxDailyTotal = 1;
 
-            // Считаем общую стату
             dates.forEach(date => {
                 if(db[date]) {
                     shiftsWorked++;
                     sumTotal += db[date].total;
+                    sumBase += BASE_SALARY; // Оклад за каждую отработанную смену
+                    sumBonus += (db[date].total - BASE_SALARY); // Процент за смену
                     sumHookahs += db[date].hookahs;
                     if(db[date].total > maxDailyTotal) maxDailyTotal = db[date].total;
                 }
@@ -484,17 +495,18 @@
 
             document.getElementById('stat-shifts').textContent = shiftsWorked;
             document.getElementById('stat-hookahs').textContent = sumHookahs;
+            
+            // Новые поля для разбивки дохода
+            document.getElementById('stat-base').textContent = fmt(sumBase) + ' ₸';
+            document.getElementById('stat-bonus').textContent = fmt(sumBonus) + ' ₸';
             document.getElementById('stat-total').textContent = fmt(sumTotal) + ' ₸';
 
-            // Отрисовка графика
             const chartArea = document.getElementById('trend-chart');
             chartArea.innerHTML = '';
 
             dates.forEach(date => {
                 const dayData = db[date] || { total: 0 };
                 const heightPercent = (dayData.total / maxDailyTotal) * 100;
-                
-                // Берем короткую дату (число)
                 const shortDate = date.split('-')[2];
 
                 const barWrap = document.createElement('div');
@@ -507,7 +519,6 @@
             });
         }
 
-        // Инициализация
         initPickers();
         updateShiftPricing();
         setTimeout(() => {
@@ -515,7 +526,6 @@
             handleScroll(document.getElementById('replacement-picker'), 'replacement');
         }, 100);
 
-        // Ставим дефолтные даты в кастомный фильтр (текущий месяц)
         const dEnd = getShiftDate();
         const dStart = new Date(dEnd.getFullYear(), dEnd.getMonth(), 1);
         document.getElementById('date-end').value = dEnd.toISOString().split('T')[0];
@@ -523,7 +533,6 @@
 
         generateReport();
 
-        // Обновление цен при переходе времени
         setInterval(() => {
             updateShiftPricing();
             calculateTotal();
