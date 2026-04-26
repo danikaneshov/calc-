@@ -6,7 +6,7 @@
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Кальян Кальк">
+    <meta name="apple-mobile-web-app-title" content="Смена">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#000000">
     
@@ -34,11 +34,16 @@
             min-height: 100vh;
             box-sizing: border-box;
             letter-spacing: -0.5px;
-            transition: background-color 0.3s ease;
             overflow-x: hidden;
             -webkit-user-select: none;
             user-select: none;
             touch-action: manipulation;
+        }
+
+        /* Анимация переключения экранов */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.98); }
+            to { opacity: 1; transform: scale(1); }
         }
 
         .app-title {
@@ -49,9 +54,8 @@
             letter-spacing: 2px;
             width: 100%;
             max-width: 400px;
+            text-align: left;
         }
-
-        .admin-title { display: none; color: var(--muted); }
 
         .status-badge {
             font-size: 11px;
@@ -68,115 +72,76 @@
 
         #db-status { color: var(--accent); }
 
+        /* Контейнеры экранов */
+        .view-section {
+            display: none;
+            width: 100%;
+            max-width: 400px;
+            flex-direction: column;
+            animation: fadeIn 0.2s ease-out;
+        }
+
         /* Колесики */
         .pickers-wrapper {
             display: flex;
             gap: 10px;
             width: 100%;
             max-width: 400px;
+            margin-bottom: 30px;
         }
 
-        .picker-column {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .picker-label {
-            font-size: 12px;
-            margin-bottom: 10px;
-            font-weight: 600;
-            text-transform: uppercase;
-            color: var(--muted);
-        }
-
+        .picker-column { flex: 1; display: flex; flex-direction: column; align-items: center; }
+        .picker-label { font-size: 12px; margin-bottom: 10px; font-weight: 600; text-transform: uppercase; color: var(--muted); }
         .picker-container {
-            height: 120px;
-            width: 100%;
-            position: relative;
-            background-color: var(--highlight);
-            border-radius: 4px;
-            overflow: hidden;
-            border: 1px solid var(--border);
+            height: 120px; width: 100%; position: relative; background-color: var(--highlight);
+            border-radius: 4px; overflow: hidden; border: 1px solid var(--border);
         }
-
         .picker-container::before {
-            content: "";
-            position: absolute;
-            top: 40px; left: 0; right: 0; height: 40px;
-            background-color: rgba(255, 255, 255, 0.03);
-            border-top: 1px solid rgba(255,255,255,0.1);
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            pointer-events: none;
-            z-index: 2;
+            content: ""; position: absolute; top: 40px; left: 0; right: 0; height: 40px;
+            background-color: rgba(255, 255, 255, 0.03); border-top: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid rgba(255,255,255,0.1); pointer-events: none; z-index: 2;
         }
-
         .picker {
-            height: 100%;
-            overflow-y: scroll;
-            scroll-snap-type: y mandatory;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-            position: relative;
-            z-index: 1;
-            scroll-behavior: smooth;
+            height: 100%; overflow-y: scroll; scroll-snap-type: y mandatory;
+            scrollbar-width: none; -ms-overflow-style: none; position: relative; z-index: 1; scroll-behavior: smooth;
         }
         .picker::-webkit-scrollbar { display: none; }
         .spacer { height: 40px; }
-
         .picker-item {
-            height: 40px; line-height: 40px;
-            text-align: center; font-size: 18px; font-weight: 600;
-            scroll-snap-align: center; color: #333;
-            transition: all 0.2s ease;
+            height: 40px; line-height: 40px; text-align: center; font-size: 18px; font-weight: 600;
+            scroll-snap-align: center; color: #333; transition: all 0.2s ease;
         }
         .picker-item.active { color: var(--text-color); font-size: 24px; }
 
-        /* Карточка результата */
-        .result-card {
-            margin-top: 30px;
-            width: 100%;
-            max-width: 400px;
-        }
-
-        .report-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            padding: 8px 0;
-            font-size: 14px;
-            color: var(--muted);
-        }
-        .report-row span:last-child { font-weight: 600; color: var(--text-color); }
-
+        /* Универсальные стили карточек */
+        .report-row { display: flex; justify-content: space-between; align-items: flex-end; padding: 8px 0; font-size: 14px; color: var(--muted); }
+        .report-row span:last-child { font-weight: 600; color: var(--text-color); font-variant-numeric: tabular-nums; }
         .divider { border: none; border-top: 1px solid var(--border); margin: 15px 0; }
         .total-row span:first-child { font-weight: 800; text-transform: uppercase; color: var(--text-color); }
         .total-price { font-size: 28px; font-weight: 800; }
 
         .save-btn {
-            width: 100%; padding: 15px; margin-top: 20px;
-            background-color: var(--text-color); color: var(--bg-color);
-            border: none; border-radius: 4px; font-size: 14px; font-weight: 800;
-            text-transform: uppercase; cursor: pointer; transition: 0.2s;
+            width: 100%; padding: 15px; margin-top: 20px; background-color: var(--text-color); color: var(--bg-color);
+            border: none; border-radius: 4px; font-size: 14px; font-weight: 800; text-transform: uppercase; cursor: pointer; transition: 0.2s;
         }
+        .save-btn:active { transform: scale(0.98); opacity: 0.8; }
         .secondary-btn { background-color: var(--highlight); color: var(--muted); border: 1px solid var(--border); margin-top: 30px; font-size: 11px; }
 
         /* Аналитика */
-        .analytics-section { width: 100%; max-width: 400px; margin-top: 50px; position: relative; }
         .filters { display: flex; gap: 5px; margin-bottom: 20px; flex-wrap: wrap; }
         .filter-btn {
             flex: 1; padding: 8px 2px; background: transparent; border: 1px solid var(--border);
             color: var(--muted); font-size: 11px; font-weight: 600; text-transform: uppercase;
-            border-radius: 4px; transition: 0.2s;
+            border-radius: 4px; transition: 0.2s; cursor: pointer;
         }
         .filter-btn.active { background: var(--text-color); color: var(--bg-color); border-color: var(--text-color); }
 
-        .insights-block { background-color: #0a0a0a; border: 1px dashed var(--border); border-radius: 4px; padding: 15px; margin-top: 15px; }
-        .insight-row { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-bottom: 8px; }
-        .insight-row span:last-child { color: var(--accent); font-weight: 700; text-transform: uppercase; }
+        .date-inputs { display: flex; gap: 5px; width: 100%; margin-top: 5px; }
+        .date-inputs input {
+            flex: 1; background: transparent; border: 1px solid var(--border); color: var(--text-color);
+            padding: 8px; border-radius: 4px; font-family: inherit; font-size: 12px; color-scheme: dark;
+        }
 
-        /* График */
         .chart-container { position: relative; width: 100%; margin-bottom: 20px; }
         .chart {
             width: 100%; height: 140px; border-bottom: 1px solid var(--border);
@@ -185,6 +150,11 @@
         .chart::-webkit-scrollbar { display: none; }
         .chart-node-hitbox { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 
+        .insights-block { background-color: #0a0a0a; border: 1px dashed var(--border); border-radius: 4px; padding: 15px; margin-top: 15px; }
+        .insight-row { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+        .insight-row span:last-child { color: var(--accent); font-weight: 700; text-transform: uppercase; }
+
+        /* Тултип */
         .chart-tooltip {
             position: fixed; background: rgba(28, 28, 30, 0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.1); color: var(--text-color); padding: 10px 14px; border-radius: 8px;
@@ -193,21 +163,20 @@
         }
         .chart-tooltip.visible { opacity: 1; transform: translate(-50%, -15px); }
 
-        /* Свертка (Админ) */
-        .admin-view { display: none; }
-        body.admin-mode .personal-view { display: none !important; }
-        body.admin-mode .admin-view { display: flex !important; }
-        body.admin-mode .admin-title { display: block; }
-        body.admin-mode .personal-title { display: none; }
-        body.admin-mode .analytics-section { display: none !important; }
-        body.admin-mode .save-btn { display: none !important; }
-
         /* Ручной ввод */
         .manual-form { display: none; background: var(--highlight); border: 1px solid var(--border); padding: 15px; margin-top: 15px; border-radius: 4px; }
-        .manual-form input {
-            width: 100%; background: #000; border: 1px solid var(--border); color: var(--text-color);
-            padding: 12px; border-radius: 4px; margin-bottom: 10px; box-sizing: border-box; color-scheme: dark;
+        .manual-form input { width: 100%; background: #000; border: 1px solid var(--border); color: var(--text-color); padding: 12px; border-radius: 4px; margin-bottom: 10px; box-sizing: border-box; color-scheme: dark; }
+
+        /* Навигационные точки (iOS стиль) */
+        .pager {
+            display: flex; gap: 8px; margin-top: 40px; justify-content: center; width: 100%;
         }
+        .pager-dot {
+            width: 8px; height: 8px; border-radius: 50%; background-color: var(--border);
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+        .pager-dot.active { background-color: var(--text-color); transform: scale(1.2); }
+
     </style>
 </head>
 <body>
@@ -218,15 +187,13 @@
         <div style="font-size: 11px; color: var(--muted);" id="tt-details">--</div>
     </div>
 
-    <h1 class="app-title personal-title">Смена</h1>
-    <h1 class="app-title admin-title">Сверка Кассы</h1>
-
+    <h1 class="app-title" id="main-title">Смена</h1>
     <div class="status-badge">
         <span id="shift-status">Загрузка...</span>
         <span id="db-status">ПОДКЛЮЧЕНИЕ...</span>
     </div>
 
-    <div class="pickers-wrapper">
+    <div class="pickers-wrapper" id="pickers-section">
         <div class="picker-column">
             <div class="picker-label">Кальяны</div>
             <div class="picker-container"><div class="picker" id="hookah-picker"><div class="spacer"></div><div class="spacer"></div></div></div>
@@ -237,26 +204,17 @@
         </div>
     </div>
 
-    <div class="result-card">
-        <div class="personal-view" style="width: 100%;">
-            <div class="report-row"><span>Оклад</span><span>7 000 ₸</span></div>
-            <div class="report-row"><span>Процент (10%)</span><span id="bonus-price">0 ₸</span></div>
-            <div class="divider"></div>
-            <div class="report-row total-row"><span>Мой итог</span><span class="total-price" id="total-price">7 000 ₸</span></div>
-        </div>
 
-        <div class="admin-view" style="flex-direction: column; width: 100%;">
-            <div class="report-row"><span>Кальяны (Касса)</span><span id="admin-hookahs-money">0 ₸</span></div>
-            <div class="report-row"><span>Замены (Касса)</span><span id="admin-replacements-money">0 ₸</span></div>
-            <div class="divider"></div>
-            <div class="report-row total-row"><span>В кассу</span><span class="total-price" id="admin-total-price">0 ₸</span></div>
-        </div>
-
-        <button class="save-btn personal-view" onclick="saveCurrentShift()">Сохранить смену</button>
+    <div class="view-section" id="view-calc" style="display: flex;">
+        <div class="report-row"><span>Оклад</span><span>7 000 ₸</span></div>
+        <div class="report-row"><span>Процент (10%)</span><span id="bonus-price">0 ₸</span></div>
+        <div class="divider"></div>
+        <div class="report-row total-row"><span>Итого</span><span class="total-price" id="total-price">7 000 ₸</span></div>
+        <button class="save-btn" onclick="saveCurrentShift()">Сохранить смену</button>
     </div>
 
-    <div class="analytics-section">
-        <h1>Аналитика</h1>
+
+    <div class="view-section" id="view-analytics">
         <div class="filters">
             <button class="filter-btn active" onclick="setFilter('3', this)">3 дня</button>
             <button class="filter-btn" onclick="setFilter('7', this)">Неделя</button>
@@ -264,28 +222,39 @@
             <button class="filter-btn" onclick="setFilter('all', this)">Все</button>
             <button class="filter-btn" onclick="setFilter('custom', this)">Период</button>
         </div>
+        <div class="date-inputs" id="custom-dates" style="display: none;">
+            <input type="date" id="date-start" onchange="generateReport()">
+            <input type="date" id="date-end" onchange="generateReport()">
+        </div>
+
         <div class="chart-container"><div class="chart" id="trend-chart" onscroll="hideTooltip()"></div></div>
 
-        <div class="result-card" style="margin-top: 0;">
-            <div class="report-row"><span>Смен отработано</span><span id="stat-shifts">0</span></div>
-            <div class="report-row"><span>Сделано кальянов</span><span id="stat-hookahs">0</span></div>
-            <div class="insights-block">
-                <div class="insight-row"><span>Средний чек:</span><span id="stat-avg">0 ₸</span></div>
-                <div class="insight-row"><span>Лучший день:</span><span id="stat-best-day">-</span></div>
+        <div class="report-row"><span>Смен отработано</span><span id="stat-shifts">0</span></div>
+        <div class="report-row"><span>Сделано кальянов</span><span id="stat-hookahs">0</span></div>
+        
+        <div class="insights-block">
+            <div class="insight-row"><span>Средний чек:</span><span id="stat-avg">0 ₸</span></div>
+            <div class="insight-row"><span>Лучший день:</span><span id="stat-best-day">-</span></div>
+        </div>
+        <div class="divider"></div>
+        <div class="report-row total-row"><span>Общий доход</span><span id="stat-total" style="font-size: 22px;">0 ₸</span></div>
+        
+        <button class="save-btn secondary-btn" onclick="toggleManualForm()">+ Добавить прошлую смену</button>
+        <div id="manual-form" class="manual-form">
+            <input type="date" id="manual-date">
+            <div style="display: flex; gap: 10px;">
+                <input type="number" id="manual-hookahs" placeholder="Кальяны">
+                <input type="number" id="manual-replacements" placeholder="Замены">
             </div>
-            <div class="divider"></div>
-            <div class="report-row total-row"><span>Общий доход</span><span id="stat-total" style="font-size: 22px;">0 ₸</span></div>
-            <button class="save-btn secondary-btn" onclick="toggleManualForm()">+ Добавить прошлую смену</button>
-            <div id="manual-form" class="manual-form">
-                <input type="date" id="manual-date">
-                <div style="display: flex; gap: 10px;">
-                    <input type="number" id="manual-hookahs" placeholder="Кальяны">
-                    <input type="number" id="manual-replacements" placeholder="Замены">
-                </div>
-                <button class="save-btn" style="margin-top: 0;" onclick="saveManualShift()">Записать</button>
-            </div>
+            <button class="save-btn" style="margin-top: 0;" onclick="saveManualShift()">Записать</button>
         </div>
     </div>
+
+    <div class="pager">
+        <div class="pager-dot active" id="dot-0"></div>
+        <div class="pager-dot" id="dot-1"></div>
+    </div>
+
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
@@ -309,16 +278,57 @@
 
         const fmt = (num) => num.toLocaleString('ru-RU');
 
-        // --- Свайп (Режим Нурбола) ---
-        let sX = 0, sY = 0;
-        document.addEventListener('touchstart', e => { sX = e.touches[0].clientX; sY = e.touches[0].clientY; });
-        document.addEventListener('touchend', e => {
-            const dX = e.changedTouches[0].clientX - sX;
-            const dY = e.changedTouches[0].clientY - sY;
-            if (Math.abs(dX) > 60 && Math.abs(dX) > Math.abs(dY)) {
-                dX > 0 ? document.body.classList.add('admin-mode') : document.body.classList.remove('admin-mode');
+        // --- ЛОГИКА НАВИГАЦИИ (СВАЙПЫ) ---
+        let currentPage = 0; // 0: Главный, 1: Аналитика
+
+        function switchPage(pageIndex) {
+            currentPage = pageIndex;
+            
+            document.getElementById('view-calc').style.display = (pageIndex === 0) ? 'flex' : 'none';
+            document.getElementById('view-analytics').style.display = (pageIndex === 1) ? 'flex' : 'none';
+            
+            // Прячем барабаны на экране аналитики
+            document.getElementById('pickers-section').style.display = (pageIndex === 1) ? 'none' : 'flex';
+
+            // Меняем заголовок
+            const title = document.getElementById('main-title');
+            if (pageIndex === 0) title.textContent = 'Смена';
+            if (pageIndex === 1) title.textContent = 'Аналитика';
+
+            // Обновляем точки
+            document.getElementById('dot-0').classList.toggle('active', pageIndex === 0);
+            document.getElementById('dot-1').classList.toggle('active', pageIndex === 1);
+
+            // Если зашли в аналитику - рисуем график
+            if (pageIndex === 1) generateReport();
+            hideTooltip();
+        }
+
+        let startX = 0, startY = 0, isDragging = false;
+        
+        // Для мыши (ПК)
+        document.addEventListener('mousedown', e => { isDragging = true; startX = e.clientX; startY = e.clientY; });
+        document.addEventListener('mouseup', e => { if(isDragging) { handleSwipe(e.clientX, e.clientY); isDragging = false; } });
+        
+        // Для пальца (Смартфон)
+        document.addEventListener('touchstart', e => { startX = e.touches[0].clientX; startY = e.touches[0].clientY; }, {passive: true});
+        document.addEventListener('touchend', e => { handleSwipe(e.changedTouches[0].clientX, e.changedTouches[0].clientY); });
+
+        function handleSwipe(endX, endY) {
+            const diffX = endX - startX;
+            const diffY = endY - startY;
+            
+            // Если свайп длиннее 50px и он горизонтальный
+            if (Math.abs(diffX) > 50 && Math.abs(diffX) > Math.abs(diffY)) {
+                if (diffX > 0 && currentPage > 0) {
+                    // Свайп ВПРАВО
+                    switchPage(currentPage - 1);
+                } else if (diffX < 0 && currentPage < 1) {
+                    // Свайп ВЛЕВО
+                    switchPage(currentPage + 1);
+                }
             }
-        });
+        }
 
         // --- Firebase ---
         async function fetchShifts() {
@@ -327,8 +337,9 @@
                 snap.forEach(d => { shiftDataCache[d.id] = d.data(); });
                 document.getElementById('db-status').textContent = "FIREBASE OK";
                 document.getElementById('db-status').style.color = "#4caf50";
-                generateReport();
-            } catch (e) { document.getElementById('db-status').textContent = "ОШИБКА"; }
+            } catch (e) { 
+                document.getElementById('db-status').textContent = "ОШИБКА"; 
+            }
         }
 
         window.saveCurrentShift = async function() {
@@ -339,12 +350,11 @@
                 await setDoc(doc(db, "shifts", shiftDateStr), obj);
                 shiftDataCache[shiftDateStr] = obj;
                 btn.textContent = "СОХРАНЕНО";
-                generateReport();
             } catch (e) { btn.textContent = "ОШИБКА"; }
             setTimeout(() => btn.textContent = "СОХРАНИТЬ СМЕНУ", 2000);
         };
 
-        // --- Интерфейс ---
+        // --- Калькулятор ---
         function initPickers() {
             const hP = document.getElementById('hookah-picker'), rP = document.getElementById('replacement-picker');
             [hP, rP].forEach(p => {
@@ -384,23 +394,27 @@
         function calc() {
             const bonus = Math.round((hookahCount*currentHookahPrice + replacementCount*currentReplacementPrice)*0.10);
             finalSum = BASE_SALARY + bonus;
+            
             document.getElementById('bonus-price').textContent = fmt(bonus) + ' ₸';
             document.getElementById('total-price').textContent = fmt(finalSum) + ' ₸';
-            document.getElementById('admin-hookahs-money').textContent = fmt(hookahCount*currentHookahPrice) + ' ₸';
-            document.getElementById('admin-replacements-money').textContent = fmt(replacementCount*currentReplacementPrice) + ' ₸';
-            document.getElementById('admin-total-price').textContent = fmt(hookahCount*currentHookahPrice + replacementCount*currentReplacementPrice) + ' ₸';
         }
 
+        // --- Аналитика ---
         window.setFilter = (t, b) => {
             document.querySelectorAll('.filter-btn').forEach(x => x.classList.remove('active'));
-            b.classList.add('active'); currentFilter = t; generateReport();
+            b.classList.add('active'); currentFilter = t;
+            document.getElementById('custom-dates').style.display = t === 'custom' ? 'flex' : 'none';
+            if(t !== 'custom') generateReport();
         }
 
         window.generateReport = () => {
             const dates = Object.keys(shiftDataCache).sort();
             let target = []; const today = new Date(); today.setHours(0,0,0,0);
             if(currentFilter === 'all') target = dates;
-            else {
+            else if (currentFilter === 'custom') {
+                const s = document.getElementById('date-start').value, e = document.getElementById('date-end').value;
+                if(!s || !e) return; target = dates.filter(d => d >= s && d <= e);
+            } else {
                 const back = parseInt(currentFilter);
                 for(let i=back-1; i>=0; i--) { const d=new Date(today); d.setDate(d.getDate()-i); target.push(d.toISOString().split('T')[0]); }
             }
@@ -417,28 +431,34 @@
                     const dn = new Date(d).getDay(); dayTotals[dn]+=shiftDataCache[d].total; dayCounts[dn]++;
                 }
             });
+            
             document.getElementById('stat-shifts').textContent = worked;
             document.getElementById('stat-hookahs').textContent = hookahs;
             document.getElementById('stat-total').textContent = fmt(total) + ' ₸';
             document.getElementById('stat-avg').textContent = worked ? fmt(Math.round(total/worked)) + ' ₸' : '0 ₸';
+            
             let best=-1, bVal=0; for(let i=0; i<7; i++) { if(dayCounts[i] && dayTotals[i]/dayCounts[i]>bVal){bVal=dayTotals[i]/dayCounts[i]; best=i;} }
             const dns = ["Воскресенье","Понедельник","Вторник","Среда","Четверг","Пятница","Суббота"];
             document.getElementById('stat-best-day').textContent = best !== -1 ? dns[best] : '-';
 
             const chart = document.getElementById('trend-chart');
             if(!dates.length) return chart.innerHTML='';
+            
             const w = Math.max(chart.clientWidth, dates.length*45), h=140, pX=25, pYT=30, pYB=30;
             let pts=[], html='';
+            
             dates.forEach((d, i) => {
                 const val = shiftDataCache[d] ? shiftDataCache[d].total : 0;
                 const x = dates.length===1 ? w/2 : pX+(i*(w-2*pX)/(dates.length-1));
                 const y = pYT + (h-pYT-pYB) - (val/max)*(h-pYT-pYB);
                 pts.push(`${x},${y}`);
+                
                 const short = d.split('-')[2]+'.'+d.split('-')[1];
                 if(val===max && val>0) {
                     html += `<circle cx="${x}" cy="${y}" r="6" fill="black" stroke="var(--accent)" stroke-width="2" />`;
                     html += `<text x="${x}" y="${y-12}" fill="var(--accent)" font-size="9" font-weight="bold" text-anchor="middle">MAX</text>`;
                 } else { html += `<circle cx="${x}" cy="${y}" r="3" fill="black" stroke="white" stroke-width="2" />`; }
+                
                 html += `<circle cx="${x}" cy="${y}" r="20" fill="transparent" class="chart-node-hitbox" onclick="showTooltip(event,'${d}',${val},${shiftDataCache[d]?shiftDataCache[d].hookahs:0},${shiftDataCache[d]?shiftDataCache[d].replacements:0})" />`;
                 html += `<text x="${x}" y="${h-10}" fill="var(--muted)" font-size="10" text-anchor="middle">${short}</text>`;
             });
@@ -457,6 +477,7 @@
         }
         window.hideTooltip = () => document.getElementById('tooltip').classList.remove('visible');
 
+        // Ручной ввод
         window.toggleManualForm = () => { const f=document.getElementById('manual-form'); f.style.display = f.style.display==='block'?'none':'block'; }
         window.saveManualShift = async () => {
             const d = document.getElementById('manual-date').value;
@@ -464,7 +485,7 @@
             const r = parseInt(document.getElementById('manual-replacements').value)||0;
             if(!d) return;
             const isW = [5,6,0].includes(new Date(d).getDay());
-            const total = 7000 + Math.round((h*(isW?7900:4900) + r*(isW?5900:4490))*0.1);
+            const total = BASE_SALARY + Math.round((h*(isW?7900:4900) + r*(isW?5900:4490))*0.1);
             await setDoc(doc(db, "shifts", d), {total, hookahs:h, replacements:r, timestamp: Date.now()});
             shiftDataCache[d] = {total, hookahs:h, replacements:r};
             generateReport(); toggleManualForm();
