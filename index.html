@@ -47,6 +47,12 @@
             max-width: 400px;
             margin-bottom: 30px;
             letter-spacing: 1px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        #db-status {
+            color: #ff9800; /* Цвет загрузки */
         }
 
         /* Калькулятор */
@@ -268,13 +274,15 @@
             margin-top: 4px;
             font-variant-numeric: tabular-nums;
         }
-
     </style>
 </head>
 <body>
 
     <h1>Смена</h1>
-    <div class="status-badge" id="shift-status">Загрузка...</div>
+    <div class="status-badge">
+        <span id="shift-status">Загрузка...</span>
+        <span id="db-status">ПОДКЛЮЧЕНИЕ К БАЗЕ...</span>
+    </div>
 
     <div class="pickers-wrapper">
         <div class="picker-column">
@@ -311,30 +319,39 @@
             <input type="date" id="date-end" onchange="generateReport()">
         </div>
 
-        <div class="chart" id="trend-chart">
-            </div>
+        <div class="chart" id="trend-chart"></div>
 
         <div class="result-card" style="margin-top: 0;">
             <div class="report-row"><span>Смен отработано</span><span id="stat-shifts">0</span></div>
             <div class="report-row"><span>Сделано кальянов</span><span id="stat-hookahs">0</span></div>
-            
             <div class="divider"></div>
-            
             <div class="report-row"><span>Чисто окладом</span><span id="stat-base">0 ₸</span></div>
             <div class="report-row"><span>Чисто процентами</span><span id="stat-bonus">0 ₸</span></div>
-            
             <div class="divider"></div>
-            
             <div class="report-row total-row"><span>Общий доход</span><span id="stat-total" style="font-size: 22px;">0 ₸</span></div>
         </div>
     </div>
 
-    <script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+        import { getFirestore, doc, setDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyD_JuiPhUpFqJdV4TA3e0MKhxTskNm71_w",
+            authDomain: "hokkahcalc.firebaseapp.com",
+            projectId: "hokkahcalc",
+            storageBucket: "hokkahcalc.firebasestorage.app",
+            messagingSenderId: "604662761292",
+            appId: "1:604662761292:web:32b392718f894bbddb31e9"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
         const MAX_VALUE = 25;
         const REPEATS = 60;
         const ITEM_HEIGHT = 40;
         const BASE_SALARY = 7000;
-        const STORAGE_KEY = 'shift_stats_db';
 
         let hookahCount = 0;
         let replacementCount = 0;
@@ -343,10 +360,66 @@
         let finalSum = 0;
         let shiftDateStr = "";
         let currentFilter = '3';
+        
+        // Локальное хранилище, в которое мы выгружаем данные из Firebase для быстрого переключения фильтров
+        let shiftDataCache = {};
 
         const fmt = (num) => num.toLocaleString('ru-RU');
 
-        // --- ЛОГИКА КАЛЬКУЛЯТОРА ---
+        // --- Firebase Синхронизация ---
+        async function fetchAllShifts() {
+            try {
+                const querySnapshot = await getDocs(collection(db, "shifts"));
+                querySnapshot.forEach((doc) => {
+                    shiftDataCache[doc.id] = doc.data();
+                });
+                
+                const dbStatus = document.getElementById('db-status');
+                dbStatus.textContent = "FIREBASE OK";
+                dbStatus.style.color = "#4caf50";
+                
+                generateReport();
+            } catch (error) {
+                console.error("Ошибка при получении данных: ", error);
+                document.getElementById('db-status').textContent = "ОШИБКА БАЗЫ";
+                document.getElementById('db-status').style.color = "#f44336";
+            }
+        }
+
+        window.saveCurrentShift = async function() {
+            const btn = document.querySelector('.save-btn');
+            btn.textContent = "СОХРАНЯЕМ В ОБЛАКО...";
+            btn.style.backgroundColor = "#555";
+
+            const shiftObj = {
+                total: finalSum,
+                hookahs: hookahCount,
+                replacements: replacementCount,
+                timestamp: Date.now()
+            };
+
+            try {
+                await setDoc(doc(db, "shifts", shiftDateStr), shiftObj);
+                
+                // Обновляем локальный кэш, чтобы график перестроился без нового запроса в БД
+                shiftDataCache[shiftDateStr] = shiftObj;
+                
+                btn.textContent = "СОХРАНЕНО!";
+                btn.style.backgroundColor = "#4caf50";
+                generateReport(); 
+            } catch (error) {
+                console.error("Ошибка при записи: ", error);
+                btn.textContent = "ОШИБКА ДОСТУПА";
+                btn.style.backgroundColor = "#f44336";
+            }
+
+            setTimeout(() => {
+                btn.textContent = "СОХРАНИТЬ СМЕНУ";
+                btn.style.backgroundColor = "var(--text-color)";
+            }, 2000);
+        };
+
+        // --- Логика Интерфейса ---
         function initPickers() {
             const hPicker = document.getElementById('hookah-picker');
             const rPicker = document.getElementById('replacement-picker');
@@ -411,33 +484,7 @@
             document.getElementById('total-price').textContent = fmt(finalSum) + ' ₸';
         }
 
-        // --- ЛОГИКА БАЗЫ ДАННЫХ И ОТЧЕТОВ ---
-        function getDB() {
-            return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-        }
-
-        function saveCurrentShift() {
-            const db = getDB();
-            db[shiftDateStr] = {
-                total: finalSum,
-                hookahs: hookahCount,
-                replacements: replacementCount,
-                timestamp: new Date().getTime()
-            };
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
-            
-            const btn = document.querySelector('.save-btn');
-            btn.textContent = "СОХРАНЕНО!";
-            btn.style.backgroundColor = "#4caf50";
-            setTimeout(() => {
-                btn.textContent = "СОХРАНИТЬ СМЕНУ";
-                btn.style.backgroundColor = "var(--text-color)";
-            }, 2000);
-
-            generateReport(); 
-        }
-
-        function setFilter(type, btnObj) {
+        window.setFilter = function(type, btnObj) {
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
             btnObj.classList.add('active');
             currentFilter = type;
@@ -446,9 +493,8 @@
             if(type !== 'custom') generateReport();
         }
 
-        function generateReport() {
-            const db = getDB();
-            const dates = Object.keys(db).sort();
+        window.generateReport = function() {
+            const dates = Object.keys(shiftDataCache).sort();
             if (dates.length === 0) return;
 
             let targetDates = [];
@@ -456,7 +502,7 @@
             today.setHours(0,0,0,0);
 
             if (currentFilter === 'all') {
-                targetDates = dates; // Берем вообще все дни из базы
+                targetDates = dates; 
             } else if (currentFilter === 'custom') {
                 const start = document.getElementById('date-start').value;
                 const end = document.getElementById('date-end').value;
@@ -471,10 +517,10 @@
                 }
             }
 
-            renderStatsAndChart(targetDates, db);
+            renderStatsAndChart(targetDates, shiftDataCache);
         }
 
-        function renderStatsAndChart(dates, db) {
+        function renderStatsAndChart(dates, dbData) {
             let sumTotal = 0;
             let sumBase = 0;
             let sumBonus = 0;
@@ -483,20 +529,18 @@
             let maxDailyTotal = 1;
 
             dates.forEach(date => {
-                if(db[date]) {
+                if(dbData[date]) {
                     shiftsWorked++;
-                    sumTotal += db[date].total;
-                    sumBase += BASE_SALARY; // Оклад за каждую отработанную смену
-                    sumBonus += (db[date].total - BASE_SALARY); // Процент за смену
-                    sumHookahs += db[date].hookahs;
-                    if(db[date].total > maxDailyTotal) maxDailyTotal = db[date].total;
+                    sumTotal += dbData[date].total;
+                    sumBase += BASE_SALARY; 
+                    sumBonus += (dbData[date].total - BASE_SALARY); 
+                    sumHookahs += dbData[date].hookahs;
+                    if(dbData[date].total > maxDailyTotal) maxDailyTotal = dbData[date].total;
                 }
             });
 
             document.getElementById('stat-shifts').textContent = shiftsWorked;
             document.getElementById('stat-hookahs').textContent = sumHookahs;
-            
-            // Новые поля для разбивки дохода
             document.getElementById('stat-base').textContent = fmt(sumBase) + ' ₸';
             document.getElementById('stat-bonus').textContent = fmt(sumBonus) + ' ₸';
             document.getElementById('stat-total').textContent = fmt(sumTotal) + ' ₸';
@@ -505,7 +549,7 @@
             chartArea.innerHTML = '';
 
             dates.forEach(date => {
-                const dayData = db[date] || { total: 0 };
+                const dayData = dbData[date] || { total: 0 };
                 const heightPercent = (dayData.total / maxDailyTotal) * 100;
                 const shortDate = date.split('-')[2];
 
@@ -519,24 +563,28 @@
             });
         }
 
+        // Запуск
         initPickers();
         updateShiftPricing();
-        setTimeout(() => {
-            handleScroll(document.getElementById('hookah-picker'), 'hookah');
-            handleScroll(document.getElementById('replacement-picker'), 'replacement');
-        }, 100);
-
+        
+        // Ставим дефолтные даты
         const dEnd = getShiftDate();
         const dStart = new Date(dEnd.getFullYear(), dEnd.getMonth(), 1);
         document.getElementById('date-end').value = dEnd.toISOString().split('T')[0];
         document.getElementById('date-start').value = dStart.toISOString().split('T')[0];
 
-        generateReport();
+        setTimeout(() => {
+            handleScroll(document.getElementById('hookah-picker'), 'hookah');
+            handleScroll(document.getElementById('replacement-picker'), 'replacement');
+        }, 100);
 
         setInterval(() => {
             updateShiftPricing();
             calculateTotal();
         }, 60000);
+
+        // Тянем базу из Firebase при открытии
+        fetchAllShifts();
 
     </script>
 </body>
