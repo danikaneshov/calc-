@@ -51,9 +51,7 @@
             justify-content: space-between;
         }
 
-        #db-status {
-            color: #ff9800; /* Цвет загрузки */
-        }
+        #db-status { color: #ff9800; }
 
         /* Калькулятор */
         .pickers-wrapper {
@@ -181,6 +179,41 @@
             transition: opacity 0.2s;
         }
         .save-btn:active { opacity: 0.7; }
+
+        /* Вторичная кнопка */
+        .secondary-btn {
+            background-color: var(--highlight);
+            color: var(--muted);
+            border: 1px solid var(--border);
+            margin-top: 30px;
+            font-size: 11px;
+        }
+
+        /* Форма ручного ввода */
+        .manual-form {
+            display: none;
+            background: var(--highlight);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        .manual-form input {
+            width: 100%;
+            background: #000;
+            border: 1px solid var(--border);
+            color: var(--text-color);
+            padding: 12px;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-family: inherit;
+            margin-bottom: 10px;
+            color-scheme: dark;
+        }
+        .manual-form .input-group {
+            display: flex;
+            gap: 10px;
+        }
 
         /* Аналитика */
         .analytics-section {
@@ -329,6 +362,17 @@
             <div class="report-row"><span>Чисто процентами</span><span id="stat-bonus">0 ₸</span></div>
             <div class="divider"></div>
             <div class="report-row total-row"><span>Общий доход</span><span id="stat-total" style="font-size: 22px;">0 ₸</span></div>
+            
+            <button class="save-btn secondary-btn" onclick="toggleManualForm()">+ Добавить прошлую смену</button>
+            
+            <div id="manual-form" class="manual-form">
+                <input type="date" id="manual-date">
+                <div class="input-group">
+                    <input type="number" id="manual-hookahs" placeholder="Кальяны (шт)" min="0">
+                    <input type="number" id="manual-replacements" placeholder="Замены (шт)" min="0">
+                </div>
+                <button class="save-btn" style="padding: 12px; margin-top: 5px;" onclick="saveManualShift()">Записать в базу</button>
+            </div>
         </div>
     </div>
 
@@ -361,7 +405,6 @@
         let shiftDateStr = "";
         let currentFilter = '3';
         
-        // Локальное хранилище, в которое мы выгружаем данные из Firebase для быстрого переключения фильтров
         let shiftDataCache = {};
 
         const fmt = (num) => num.toLocaleString('ru-RU');
@@ -401,7 +444,6 @@
             try {
                 await setDoc(doc(db, "shifts", shiftDateStr), shiftObj);
                 
-                // Обновляем локальный кэш, чтобы график перестроился без нового запроса в БД
                 shiftDataCache[shiftDateStr] = shiftObj;
                 
                 btn.textContent = "СОХРАНЕНО!";
@@ -417,6 +459,62 @@
                 btn.textContent = "СОХРАНИТЬ СМЕНУ";
                 btn.style.backgroundColor = "var(--text-color)";
             }, 2000);
+        };
+
+        // --- Ручной ввод прошлых смен ---
+        window.toggleManualForm = function() {
+            const form = document.getElementById('manual-form');
+            form.style.display = form.style.display === 'block' ? 'none' : 'block';
+        };
+
+        window.saveManualShift = async function() {
+            const dateInput = document.getElementById('manual-date').value;
+            const hookahs = parseInt(document.getElementById('manual-hookahs').value) || 0;
+            const replacements = parseInt(document.getElementById('manual-replacements').value) || 0;
+
+            if (!dateInput) {
+                alert("Пожалуйста, выбери дату");
+                return;
+            }
+
+            // Вычисляем тариф для выбранного дня
+            const dateObj = new Date(dateInput);
+            const day = dateObj.getDay();
+            const isWeekend = (day === 5 || day === 6 || day === 0);
+            
+            const hPrice = isWeekend ? 7900 : 4900;
+            const rPrice = isWeekend ? 5900 : 4490;
+
+            const bonus = Math.round((hookahs * hPrice + replacements * rPrice) * 0.10);
+            const total = BASE_SALARY + bonus;
+
+            const shiftObj = {
+                total: total,
+                hookahs: hookahs,
+                replacements: replacements,
+                timestamp: Date.now()
+            };
+
+            const btn = document.querySelector('#manual-form .save-btn');
+            const ogText = btn.textContent;
+            btn.textContent = "СОХРАНЕНИЕ...";
+
+            try {
+                await setDoc(doc(db, "shifts", dateInput), shiftObj);
+                shiftDataCache[dateInput] = shiftObj;
+                generateReport();
+                
+                // Очищаем и прячем форму
+                document.getElementById('manual-date').value = '';
+                document.getElementById('manual-hookahs').value = '';
+                document.getElementById('manual-replacements').value = '';
+                toggleManualForm();
+            } catch (error) {
+                console.error("Ошибка ручного ввода: ", error);
+                alert("Ошибка! Проверь подключение к БД.");
+            } finally {
+                btn.textContent = ogText;
+            }
         };
 
         // --- Логика Интерфейса ---
@@ -495,7 +593,10 @@
 
         window.generateReport = function() {
             const dates = Object.keys(shiftDataCache).sort();
-            if (dates.length === 0) return;
+            if (dates.length === 0) {
+                document.getElementById('trend-chart').innerHTML = '';
+                return;
+            }
 
             let targetDates = [];
             const today = getShiftDate();
