@@ -11,7 +11,7 @@
             --highlight: #111111;
             --muted: #666666;
             --border: #222222;
-            --accent: #ffffff;
+            --accent: #ff9800; /* Цвет для рекордов */
         }
 
         body {
@@ -51,7 +51,7 @@
             justify-content: space-between;
         }
 
-        #db-status { color: #ff9800; }
+        #db-status { color: var(--accent); }
 
         /* Калькулятор */
         .pickers-wrapper {
@@ -188,6 +188,25 @@
             font-size: 11px;
         }
 
+        /* Инсайты */
+        .insights-block {
+            background-color: #0a0a0a;
+            border: 1px dashed var(--border);
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        
+        .insight-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 8px;
+        }
+        .insight-row:last-child { margin-bottom: 0; }
+        .insight-row span:last-child { color: var(--accent); font-weight: 700; text-transform: uppercase; }
+
         /* Форма ручного ввода */
         .manual-form {
             display: none;
@@ -268,7 +287,7 @@
             color-scheme: dark;
         }
 
-        /* Линейный график и Интерактив */
+        /* График */
         .chart-container {
             position: relative;
             width: 100%;
@@ -286,13 +305,9 @@
             scroll-behavior: smooth;
         }
         .chart::-webkit-scrollbar { display: none; }
+        .chart-node-hitbox { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 
-        .chart-node-hitbox {
-            cursor: pointer;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        /* Всплывающая подсказка (Glassmorphism) */
+        /* Всплывающая подсказка */
         .chart-tooltip {
             position: fixed;
             background: rgba(28, 28, 30, 0.7);
@@ -333,7 +348,7 @@
     <h1>Смена</h1>
     <div class="status-badge">
         <span id="shift-status">Загрузка...</span>
-        <span id="db-status">ПОДКЛЮЧЕНИЕ К БАЗЕ...</span>
+        <span id="db-status">ПОДКЛЮЧЕНИЕ...</span>
     </div>
 
     <div class="pickers-wrapper">
@@ -379,8 +394,12 @@
             <div class="report-row"><span>Смен отработано</span><span id="stat-shifts">0</span></div>
             <div class="report-row"><span>Сделано кальянов</span><span id="stat-hookahs">0</span></div>
             <div class="divider"></div>
-            <div class="report-row"><span>Чисто окладом</span><span id="stat-base">0 ₸</span></div>
-            <div class="report-row"><span>Чисто процентами</span><span id="stat-bonus">0 ₸</span></div>
+            
+            <div class="insights-block">
+                <div class="insight-row"><span>Средний чек смены:</span><span id="stat-avg">0 ₸</span></div>
+                <div class="insight-row"><span>Самый прибыльный день:</span><span id="stat-best-day">-</span></div>
+            </div>
+
             <div class="divider"></div>
             <div class="report-row total-row"><span>Общий доход</span><span id="stat-total" style="font-size: 22px;">0 ₸</span></div>
             
@@ -426,11 +445,14 @@
         let shiftDateStr = "";
         let currentFilter = '3';
         
+        let lastHookahIndex = -1;
+        let lastReplacementIndex = -1;
+        
         let shiftDataCache = {};
 
         const fmt = (num) => num.toLocaleString('ru-RU');
 
-        // --- Firebase Синхронизация ---
+        // --- Firebase ---
         async function fetchAllShifts() {
             try {
                 const querySnapshot = await getDocs(collection(db, "shifts"));
@@ -444,7 +466,6 @@
                 
                 generateReport();
             } catch (error) {
-                console.error("Ошибка при получении данных: ", error);
                 document.getElementById('db-status').textContent = "ОШИБКА БАЗЫ";
                 document.getElementById('db-status').style.color = "#f44336";
             }
@@ -455,17 +476,11 @@
             btn.textContent = "СОХРАНЯЕМ В ОБЛАКО...";
             btn.style.backgroundColor = "#555";
 
-            const shiftObj = {
-                total: finalSum,
-                hookahs: hookahCount,
-                replacements: replacementCount,
-                timestamp: Date.now()
-            };
+            const shiftObj = { total: finalSum, hookahs: hookahCount, replacements: replacementCount, timestamp: Date.now() };
 
             try {
                 await setDoc(doc(db, "shifts", shiftDateStr), shiftObj);
                 shiftDataCache[shiftDateStr] = shiftObj;
-                
                 btn.textContent = "СОХРАНЕНО!";
                 btn.style.backgroundColor = "#ffffff";
                 btn.style.color = "#000000";
@@ -482,7 +497,6 @@
             }, 2000);
         };
 
-        // --- Ручной ввод прошлых смен ---
         window.toggleManualForm = function() {
             const form = document.getElementById('manual-form');
             form.style.display = form.style.display === 'block' ? 'none' : 'block';
@@ -493,23 +507,15 @@
             const hookahs = parseInt(document.getElementById('manual-hookahs').value) || 0;
             const replacements = parseInt(document.getElementById('manual-replacements').value) || 0;
 
-            if (!dateInput) {
-                alert("Пожалуйста, выбери дату");
-                return;
-            }
+            if (!dateInput) return alert("Пожалуйста, выбери дату");
 
-            const dateObj = new Date(dateInput);
-            const day = dateObj.getDay();
+            const day = new Date(dateInput).getDay();
             const isWeekend = (day === 5 || day === 6 || day === 0);
-            
             const hPrice = isWeekend ? 7900 : 4900;
             const rPrice = isWeekend ? 5900 : 4490;
-
-            const bonus = Math.round((hookahs * hPrice + replacements * rPrice) * 0.10);
-            const total = BASE_SALARY + bonus;
+            const total = BASE_SALARY + Math.round((hookahs * hPrice + replacements * rPrice) * 0.10);
 
             const shiftObj = { total, hookahs, replacements, timestamp: Date.now() };
-
             const btn = document.querySelector('#manual-form .save-btn');
             const ogText = btn.textContent;
             btn.textContent = "СОХРАНЕНИЕ...";
@@ -518,32 +524,29 @@
                 await setDoc(doc(db, "shifts", dateInput), shiftObj);
                 shiftDataCache[dateInput] = shiftObj;
                 generateReport();
-                
                 document.getElementById('manual-date').value = '';
                 document.getElementById('manual-hookahs').value = '';
                 document.getElementById('manual-replacements').value = '';
                 toggleManualForm();
             } catch (error) {
-                alert("Ошибка! Проверь подключение к БД.");
+                alert("Ошибка БД.");
             } finally {
                 btn.textContent = ogText;
             }
         };
 
-        // --- Фишка: Всплывающий Тултип ---
+        // --- Тултип ---
         window.showTooltip = function(event, dateLabel, total, hookahs, replacements, nodeId) {
             const tooltip = document.getElementById('tooltip');
             document.getElementById('tt-date').textContent = dateLabel;
             document.getElementById('tt-total').textContent = fmt(total) + ' ₸';
             document.getElementById('tt-details').innerHTML = `К: <span>${hookahs}</span> | З: <span>${replacements}</span>`;
             
-            // Подсветка активной точки
             document.querySelectorAll('.active-node').forEach(el => el.remove());
             const target = event.currentTarget;
             const cx = target.getAttribute('cx');
             const cy = target.getAttribute('cy');
             
-            // Добавляем эффект свечения
             const chartArea = document.getElementById('trend-chart').querySelector('svg');
             const glow = document.createElementNS("http://www.w3.org/2000/svg", "circle");
             glow.setAttribute('cx', cx);
@@ -554,7 +557,6 @@
             glow.style.pointerEvents = 'none';
             chartArea.appendChild(glow);
 
-            // Позиционируем плашку
             const rect = target.getBoundingClientRect();
             tooltip.style.left = rect.left + (rect.width / 2) + 'px';
             tooltip.style.top = rect.top + 'px';
@@ -566,12 +568,11 @@
             document.querySelectorAll('.active-node').forEach(el => el.remove());
         };
 
-        // Скрыть тултип при клике мимо графика
         document.addEventListener('click', (e) => {
             if (!e.target.closest('.chart-container')) hideTooltip();
         });
 
-        // --- Логика Интерфейса ---
+        // --- Калькулятор и Вибрация ---
         function initPickers() {
             const hPicker = document.getElementById('hookah-picker');
             const rPicker = document.getElementById('replacement-picker');
@@ -604,7 +605,17 @@
             if (items[index]) {
                 items[index].classList.add('active');
                 const val = parseInt(items[index].dataset.value);
-                type === 'hookah' ? hookahCount = val : replacementCount = val;
+                
+                // Виброотклик (Только Android)
+                if (type === 'hookah') {
+                    if (lastHookahIndex !== -1 && lastHookahIndex !== index && navigator.vibrate) navigator.vibrate(5);
+                    lastHookahIndex = index;
+                    hookahCount = val;
+                } else {
+                    if (lastReplacementIndex !== -1 && lastReplacementIndex !== index && navigator.vibrate) navigator.vibrate(5);
+                    lastReplacementIndex = index;
+                    replacementCount = val;
+                }
                 calculateTotal();
             }
         }
@@ -618,7 +629,6 @@
         function updateShiftPricing() {
             const shiftDate = getShiftDate();
             const day = shiftDate.getDay();
-            
             shiftDateStr = shiftDate.toISOString().split('T')[0];
 
             const isWeekend = (day === 5 || day === 6 || day === 0); 
@@ -630,9 +640,8 @@
         }
 
         function calculateTotal() {
-            const bonus = Math.round((hookahCount * currentHookahPrice + replacementCount * currentReplacementPrice) * 0.10);
-            finalSum = BASE_SALARY + bonus;
-            document.getElementById('bonus-price').textContent = fmt(bonus) + ' ₸';
+            finalSum = BASE_SALARY + Math.round((hookahCount * currentHookahPrice + replacementCount * currentReplacementPrice) * 0.10);
+            document.getElementById('bonus-price').textContent = fmt(finalSum - BASE_SALARY) + ' ₸';
             document.getElementById('total-price').textContent = fmt(finalSum) + ' ₸';
         }
 
@@ -640,17 +649,13 @@
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
             btnObj.classList.add('active');
             currentFilter = type;
-            
             document.getElementById('custom-dates').style.display = type === 'custom' ? 'flex' : 'none';
             if(type !== 'custom') generateReport();
         }
 
         window.generateReport = function() {
             const dates = Object.keys(shiftDataCache).sort();
-            if (dates.length === 0) {
-                document.getElementById('trend-chart').innerHTML = '';
-                return;
-            }
+            if (dates.length === 0) return document.getElementById('trend-chart').innerHTML = '';
 
             let targetDates = [];
             const today = getShiftDate();
@@ -676,47 +681,53 @@
         }
 
         function renderStatsAndChart(dates, dbData) {
-            let sumTotal = 0;
-            let sumBase = 0;
-            let sumBonus = 0;
-            let sumHookahs = 0;
-            let shiftsWorked = 0;
-            let maxDailyTotal = 1;
+            let sumTotal = 0, sumHookahs = 0, shiftsWorked = 0, maxDailyTotal = 1;
+            
+            // Для вычисления лучшего дня
+            let dayTotals = {0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0};
+            let dayCounts = {0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0};
 
             dates.forEach(date => {
                 if(dbData[date]) {
                     shiftsWorked++;
                     sumTotal += dbData[date].total;
-                    sumBase += BASE_SALARY; 
-                    sumBonus += (dbData[date].total - BASE_SALARY); 
                     sumHookahs += dbData[date].hookahs;
                     if(dbData[date].total > maxDailyTotal) maxDailyTotal = dbData[date].total;
+                    
+                    const dNum = new Date(date).getDay();
+                    dayTotals[dNum] += dbData[date].total;
+                    dayCounts[dNum] += 1;
                 }
             });
 
+            // Инсайты: Средний чек и Лучший день
+            const avgShift = shiftsWorked > 0 ? Math.round(sumTotal / shiftsWorked) : 0;
+            let bestDayIndex = -1, bestDayAvg = 0;
+            for(let i = 0; i < 7; i++) {
+                if(dayCounts[i] > 0) {
+                    let avg = dayTotals[i] / dayCounts[i];
+                    if(avg > bestDayAvg) { bestDayAvg = avg; bestDayIndex = i; }
+                }
+            }
+            const daysNames = ["Воскресенье", "Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"];
+
             document.getElementById('stat-shifts').textContent = shiftsWorked;
             document.getElementById('stat-hookahs').textContent = sumHookahs;
-            document.getElementById('stat-base').textContent = fmt(sumBase) + ' ₸';
-            document.getElementById('stat-bonus').textContent = fmt(sumBonus) + ' ₸';
             document.getElementById('stat-total').textContent = fmt(sumTotal) + ' ₸';
+            document.getElementById('stat-avg').textContent = fmt(avgShift) + ' ₸';
+            document.getElementById('stat-best-day').textContent = bestDayIndex !== -1 ? daysNames[bestDayIndex] : '-';
 
+            // Отрисовка графика
             const chartArea = document.getElementById('trend-chart');
-            if (dates.length === 0) {
-                chartArea.innerHTML = '';
-                return;
-            }
+            if (dates.length === 0) return chartArea.innerHTML = '';
 
             const minSpacePerPoint = 45; 
             const containerWidth = chartArea.clientWidth || 360;
             const svgWidth = Math.max(containerWidth, dates.length * minSpacePerPoint);
             const svgHeight = 140;
+            const paddingX = 25, paddingYTop = 30, paddingYBottom = 30; 
             
-            const paddingX = 25;
-            const paddingYTop = 20;
-            const paddingYBottom = 30; 
-            
-            let polylinePoints = [];
-            let graphicsHTML = '';
+            let polylinePoints = [], graphicsHTML = '';
 
             dates.forEach((date, i) => {
                 const dayData = dbData[date] || { total: 0, hookahs: 0, replacements: 0 };
@@ -731,16 +742,19 @@
                 const shortDate = date.split('-')[2] + '.' + date.split('-')[1];
                 const dateLabelFull = new Date(date).toLocaleDateString('ru-RU', {day: 'numeric', month: 'long'});
                 
-                // Визуальная точка
-                graphicsHTML += `<circle cx="${x}" cy="${y}" r="3" fill="var(--bg-color)" stroke="var(--text-color)" stroke-width="2" style="pointer-events:none;" id="node-${i}" />`;
+                // Проверка на рекорд
+                if (val === maxDailyTotal && val > 0) {
+                    graphicsHTML += `<circle cx="${x}" cy="${y}" r="6" fill="var(--bg-color)" stroke="var(--accent)" stroke-width="2" style="pointer-events:none;" />`;
+                    graphicsHTML += `<text x="${x}" y="${y - 12}" fill="var(--accent)" font-size="9" font-weight="bold" font-family="sans-serif" text-anchor="middle" style="pointer-events:none;">MAX</text>`;
+                } else {
+                    graphicsHTML += `<circle cx="${x}" cy="${y}" r="3" fill="var(--bg-color)" stroke="var(--text-color)" stroke-width="2" style="pointer-events:none;" id="node-${i}" />`;
+                }
                 
-                // Невидимая зона (Hitbox) для удобного тапа пальцем
                 graphicsHTML += `<circle cx="${x}" cy="${y}" r="20" fill="transparent" class="chart-node-hitbox" onclick="showTooltip(event, '${dateLabelFull}', ${val}, ${dayData.hookahs}, ${dayData.replacements}, 'node-${i}')" />`;
-                
                 graphicsHTML += `<text x="${x}" y="${svgHeight - 10}" fill="var(--muted)" font-size="10" font-family="sans-serif" text-anchor="middle" style="pointer-events:none;">${shortDate}</text>`;
             });
 
-            const svgHTML = `
+            chartArea.innerHTML = `
                 <svg width="${svgWidth}" height="${svgHeight}" style="display: block;">
                     <line x1="${paddingX}" y1="${svgHeight - paddingYBottom + 5}" x2="${svgWidth - paddingX}" y2="${svgHeight - paddingYBottom + 5}" stroke="var(--border)" stroke-width="1" />
                     <polyline points="${polylinePoints.join(' ')}" fill="none" stroke="var(--text-color)" stroke-width="2" stroke-linejoin="round" style="pointer-events:none;" />
@@ -748,11 +762,7 @@
                 </svg>
             `;
 
-            chartArea.innerHTML = svgHTML;
-
-            setTimeout(() => {
-                chartArea.scrollLeft = chartArea.scrollWidth;
-            }, 50);
+            setTimeout(() => chartArea.scrollLeft = chartArea.scrollWidth, 50);
         }
 
         initPickers();
@@ -768,11 +778,7 @@
             handleScroll(document.getElementById('replacement-picker'), 'replacement');
         }, 100);
 
-        setInterval(() => {
-            updateShiftPricing();
-            calculateTotal();
-        }, 60000);
-
+        setInterval(() => { updateShiftPricing(); calculateTotal(); }, 60000);
         fetchAllShifts();
 
     </script>
