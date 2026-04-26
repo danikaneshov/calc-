@@ -307,11 +307,19 @@
         let startX = 0, startY = 0, isDragging = false;
         
         // Для мыши (ПК)
-        document.addEventListener('mousedown', e => { isDragging = true; startX = e.clientX; startY = e.clientY; });
+        document.addEventListener('mousedown', e => { 
+            isDragging = true; startX = e.clientX; startY = e.clientY; 
+            // Прячем тултип, если клик не по точке графика
+            if (!(e.target.classList && e.target.classList.contains('chart-node-hitbox'))) hideTooltip();
+        });
         document.addEventListener('mouseup', e => { if(isDragging) { handleSwipe(e.clientX, e.clientY); isDragging = false; } });
         
         // Для пальца (Смартфон)
-        document.addEventListener('touchstart', e => { startX = e.touches[0].clientX; startY = e.touches[0].clientY; }, {passive: true});
+        document.addEventListener('touchstart', e => { 
+            startX = e.touches[0].clientX; startY = e.touches[0].clientY; 
+            // Прячем тултип при любом тапе мимо точки графика
+            if (!(e.target.classList && e.target.classList.contains('chart-node-hitbox'))) hideTooltip();
+        }, {passive: true});
         document.addEventListener('touchend', e => { handleSwipe(e.changedTouches[0].clientX, e.changedTouches[0].clientY); });
 
         function handleSwipe(endX, endY) {
@@ -467,15 +475,33 @@
         }
 
         window.showTooltip = (e, d, t, h, r) => {
+            e.stopPropagation(); // Блокируем передачу клика дальше
             const tt = document.getElementById('tooltip');
             document.getElementById('tt-date').textContent = d;
             document.getElementById('tt-total').textContent = fmt(t) + ' ₸';
             document.getElementById('tt-details').innerHTML = `К: ${h} | З: ${r}`;
-            const rct = e.currentTarget.getBoundingClientRect();
+            
+            document.querySelectorAll('.active-node').forEach(el => el.remove());
+            const target = e.currentTarget;
+            const cx = target.getAttribute('cx');
+            const cy = target.getAttribute('cy');
+            
+            const chartArea = document.getElementById('trend-chart').querySelector('svg');
+            const glow = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            glow.setAttribute('cx', cx); glow.setAttribute('cy', cy);
+            glow.setAttribute('r', '8'); glow.setAttribute('fill', 'rgba(255,255,255,0.3)');
+            glow.setAttribute('class', 'active-node'); glow.style.pointerEvents = 'none';
+            chartArea.appendChild(glow);
+
+            const rct = target.getBoundingClientRect();
             tt.style.left = rct.left + rct.width/2 + 'px'; tt.style.top = rct.top + 'px';
             tt.classList.add('visible');
         }
-        window.hideTooltip = () => document.getElementById('tooltip').classList.remove('visible');
+
+        window.hideTooltip = () => {
+            document.getElementById('tooltip').classList.remove('visible');
+            document.querySelectorAll('.active-node').forEach(el => el.remove());
+        };
 
         // Ручной ввод
         window.toggleManualForm = () => { const f=document.getElementById('manual-form'); f.style.display = f.style.display==='block'?'none':'block'; }
