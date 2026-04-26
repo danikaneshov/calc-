@@ -197,10 +197,10 @@
         .settings-content h2 { margin-top: 0; font-size: 16px; text-transform: uppercase; color: var(--text-color); letter-spacing: 1px; margin-bottom: 20px; text-align: center; }
         .cfg-group { margin-bottom: 15px; }
         .cfg-label { display: block; font-size: 11px; color: var(--muted); text-transform: uppercase; margin-bottom: 6px; font-weight: 600;}
-        .cfg-inputs { display: flex; gap: 10px; }
+        .cfg-inputs { display: flex; gap: 10px; width: 100%; }
         .cfg-inputs input {
-            flex: 1; background: #000; border: 1px solid var(--border); color: var(--text-color);
-            padding: 10px; border-radius: 4px; text-align: center; font-size: 14px; font-weight: 600; font-family: inherit;
+            flex: 1; min-width: 0; width: 100%; background: #000; border: 1px solid var(--border); color: var(--text-color);
+            padding: 10px; border-radius: 4px; text-align: center; font-size: 14px; font-weight: 600; font-family: inherit; box-sizing: border-box;
         }
 
     </style>
@@ -589,7 +589,7 @@
             document.querySelectorAll('.active-node').forEach(el => el.remove());
         };
 
-        // Ручной ввод
+        // Ручной ввод с новыми ценами из конфига
         window.toggleManualForm = () => { const f=document.getElementById('manual-form'); f.style.display = f.style.display==='block'?'none':'block'; }
         window.saveManualShift = async () => {
             const d = document.getElementById('manual-date').value;
