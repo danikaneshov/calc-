@@ -176,9 +176,9 @@
             text-transform: uppercase;
             letter-spacing: 1px;
             cursor: pointer;
-            transition: opacity 0.2s;
+            transition: all 0.2s ease;
         }
-        .save-btn:active { opacity: 0.7; }
+        .save-btn:active { transform: scale(0.98); opacity: 0.8; }
 
         .secondary-btn {
             background-color: var(--highlight);
@@ -219,6 +219,7 @@
             width: 100%;
             max-width: 400px;
             margin-top: 50px;
+            position: relative;
         }
 
         .filters {
@@ -239,12 +240,13 @@
             text-transform: uppercase;
             border-radius: 4px;
             cursor: pointer;
+            transition: all 0.2s ease;
         }
 
         .filter-btn.active {
-            background: var(--border);
-            color: var(--text-color);
-            border-color: var(--muted);
+            background: var(--text-color);
+            color: var(--bg-color);
+            border-color: var(--text-color);
         }
 
         .date-inputs {
@@ -266,24 +268,67 @@
             color-scheme: dark;
         }
 
-        /* Линейный график */
+        /* Линейный график и Интерактив */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
         .chart {
             width: 100%;
             height: 140px;
-            margin-bottom: 20px;
             border-bottom: 1px solid var(--border);
             overflow-x: auto;
             overflow-y: hidden;
-            -ms-overflow-style: none;  /* Скрываем скроллбар в IE и Edge */
-            scrollbar-width: none;  /* Скрываем скроллбар в Firefox */
+            -ms-overflow-style: none;  
+            scrollbar-width: none;  
             scroll-behavior: smooth;
         }
-        .chart::-webkit-scrollbar {
-            display: none; /* Скрываем скроллбар в Chrome, Safari */
+        .chart::-webkit-scrollbar { display: none; }
+
+        .chart-node-hitbox {
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
         }
+
+        /* Всплывающая подсказка (Glassmorphism) */
+        .chart-tooltip {
+            position: fixed;
+            background: rgba(28, 28, 30, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-color);
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            pointer-events: none;
+            opacity: 0;
+            transform: translate(-50%, 10px);
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            z-index: 100;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+        .chart-tooltip.visible {
+            opacity: 1;
+            transform: translate(-50%, -15px);
+        }
+        .tooltip-date { font-size: 10px; color: var(--muted); text-transform: uppercase; font-weight: 800; letter-spacing: 1px; margin-bottom: 4px; }
+        .tooltip-total { font-size: 18px; font-weight: 800; color: var(--text-color); margin-bottom: 4px; font-variant-numeric: tabular-nums;}
+        .tooltip-details { font-size: 11px; color: var(--muted); font-weight: 600; }
+        .tooltip-details span { color: var(--text-color); }
+
     </style>
 </head>
 <body>
+
+    <div id="tooltip" class="chart-tooltip">
+        <div class="tooltip-date" id="tt-date">--</div>
+        <div class="tooltip-total" id="tt-total">--</div>
+        <div class="tooltip-details" id="tt-details">--</div>
+    </div>
 
     <h1>Смена</h1>
     <div class="status-badge">
@@ -326,7 +371,9 @@
             <input type="date" id="date-end" onchange="generateReport()">
         </div>
 
-        <div class="chart" id="trend-chart"></div>
+        <div class="chart-container">
+            <div class="chart" id="trend-chart" onscroll="hideTooltip()"></div>
+        </div>
 
         <div class="result-card" style="margin-top: 0;">
             <div class="report-row"><span>Смен отработано</span><span id="stat-shifts">0</span></div>
@@ -417,14 +464,13 @@
 
             try {
                 await setDoc(doc(db, "shifts", shiftDateStr), shiftObj);
-                
                 shiftDataCache[shiftDateStr] = shiftObj;
                 
                 btn.textContent = "СОХРАНЕНО!";
-                btn.style.backgroundColor = "#4caf50";
+                btn.style.backgroundColor = "#ffffff";
+                btn.style.color = "#000000";
                 generateReport(); 
             } catch (error) {
-                console.error("Ошибка при записи: ", error);
                 btn.textContent = "ОШИБКА ДОСТУПА";
                 btn.style.backgroundColor = "#f44336";
             }
@@ -432,6 +478,7 @@
             setTimeout(() => {
                 btn.textContent = "СОХРАНИТЬ СМЕНУ";
                 btn.style.backgroundColor = "var(--text-color)";
+                btn.style.color = "var(--bg-color)";
             }, 2000);
         };
 
@@ -461,12 +508,7 @@
             const bonus = Math.round((hookahs * hPrice + replacements * rPrice) * 0.10);
             const total = BASE_SALARY + bonus;
 
-            const shiftObj = {
-                total: total,
-                hookahs: hookahs,
-                replacements: replacements,
-                timestamp: Date.now()
-            };
+            const shiftObj = { total, hookahs, replacements, timestamp: Date.now() };
 
             const btn = document.querySelector('#manual-form .save-btn');
             const ogText = btn.textContent;
@@ -482,12 +524,52 @@
                 document.getElementById('manual-replacements').value = '';
                 toggleManualForm();
             } catch (error) {
-                console.error("Ошибка ручного ввода: ", error);
                 alert("Ошибка! Проверь подключение к БД.");
             } finally {
                 btn.textContent = ogText;
             }
         };
+
+        // --- Фишка: Всплывающий Тултип ---
+        window.showTooltip = function(event, dateLabel, total, hookahs, replacements, nodeId) {
+            const tooltip = document.getElementById('tooltip');
+            document.getElementById('tt-date').textContent = dateLabel;
+            document.getElementById('tt-total').textContent = fmt(total) + ' ₸';
+            document.getElementById('tt-details').innerHTML = `К: <span>${hookahs}</span> | З: <span>${replacements}</span>`;
+            
+            // Подсветка активной точки
+            document.querySelectorAll('.active-node').forEach(el => el.remove());
+            const target = event.currentTarget;
+            const cx = target.getAttribute('cx');
+            const cy = target.getAttribute('cy');
+            
+            // Добавляем эффект свечения
+            const chartArea = document.getElementById('trend-chart').querySelector('svg');
+            const glow = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            glow.setAttribute('cx', cx);
+            glow.setAttribute('cy', cy);
+            glow.setAttribute('r', '8');
+            glow.setAttribute('fill', 'rgba(255,255,255,0.3)');
+            glow.setAttribute('class', 'active-node');
+            glow.style.pointerEvents = 'none';
+            chartArea.appendChild(glow);
+
+            // Позиционируем плашку
+            const rect = target.getBoundingClientRect();
+            tooltip.style.left = rect.left + (rect.width / 2) + 'px';
+            tooltip.style.top = rect.top + 'px';
+            tooltip.classList.add('visible');
+        };
+
+        window.hideTooltip = function() {
+            document.getElementById('tooltip').classList.remove('visible');
+            document.querySelectorAll('.active-node').forEach(el => el.remove());
+        };
+
+        // Скрыть тултип при клике мимо графика
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.chart-container')) hideTooltip();
+        });
 
         // --- Логика Интерфейса ---
         function initPickers() {
@@ -601,7 +683,6 @@
             let shiftsWorked = 0;
             let maxDailyTotal = 1;
 
-            // Подсчет статистики и нахождение максимума для шкалы графика
             dates.forEach(date => {
                 if(dbData[date]) {
                     shiftsWorked++;
@@ -619,71 +700,61 @@
             document.getElementById('stat-bonus').textContent = fmt(sumBonus) + ' ₸';
             document.getElementById('stat-total').textContent = fmt(sumTotal) + ' ₸';
 
-            // === ОТРИСОВКА ЛИНЕЙНОГО ГРАФИКА (SVG) ===
             const chartArea = document.getElementById('trend-chart');
             if (dates.length === 0) {
                 chartArea.innerHTML = '';
                 return;
             }
 
-            // Динамическая ширина для скролла
-            const minSpacePerPoint = 40; // Минимум 40px на каждый день
+            const minSpacePerPoint = 45; 
             const containerWidth = chartArea.clientWidth || 360;
             const svgWidth = Math.max(containerWidth, dates.length * minSpacePerPoint);
-            const svgHeight = 120;
+            const svgHeight = 140;
             
-            const paddingX = 20;
+            const paddingX = 25;
             const paddingYTop = 20;
-            const paddingYBottom = 30; // Место для дат
+            const paddingYBottom = 30; 
             
             let polylinePoints = [];
-            let circlesHTML = '';
-            let textsHTML = '';
+            let graphicsHTML = '';
 
             dates.forEach((date, i) => {
-                const val = dbData[date] ? dbData[date].total : 0;
+                const dayData = dbData[date] || { total: 0, hookahs: 0, replacements: 0 };
+                const val = dayData.total;
                 
-                // Координата X
-                let x;
-                if (dates.length === 1) {
-                    x = svgWidth / 2;
-                } else {
-                    x = paddingX + (i * (svgWidth - 2 * paddingX) / (dates.length - 1));
-                }
-                
-                // Координата Y (перевернутая ось)
+                let x = dates.length === 1 ? svgWidth / 2 : paddingX + (i * (svgWidth - 2 * paddingX) / (dates.length - 1));
                 const yRange = svgHeight - paddingYTop - paddingYBottom;
                 const y = paddingYTop + yRange - (val / maxDailyTotal) * yRange;
 
                 polylinePoints.push(`${x},${y}`);
 
-                // Точка на графике
-                circlesHTML += `<circle cx="${x}" cy="${y}" r="4" fill="var(--bg-color)" stroke="var(--text-color)" stroke-width="2" />`;
-                
-                // Текст даты снизу
                 const shortDate = date.split('-')[2] + '.' + date.split('-')[1];
-                textsHTML += `<text x="${x}" y="${svgHeight - 10}" fill="var(--muted)" font-size="10" font-family="sans-serif" text-anchor="middle">${shortDate}</text>`;
+                const dateLabelFull = new Date(date).toLocaleDateString('ru-RU', {day: 'numeric', month: 'long'});
+                
+                // Визуальная точка
+                graphicsHTML += `<circle cx="${x}" cy="${y}" r="3" fill="var(--bg-color)" stroke="var(--text-color)" stroke-width="2" style="pointer-events:none;" id="node-${i}" />`;
+                
+                // Невидимая зона (Hitbox) для удобного тапа пальцем
+                graphicsHTML += `<circle cx="${x}" cy="${y}" r="20" fill="transparent" class="chart-node-hitbox" onclick="showTooltip(event, '${dateLabelFull}', ${val}, ${dayData.hookahs}, ${dayData.replacements}, 'node-${i}')" />`;
+                
+                graphicsHTML += `<text x="${x}" y="${svgHeight - 10}" fill="var(--muted)" font-size="10" font-family="sans-serif" text-anchor="middle" style="pointer-events:none;">${shortDate}</text>`;
             });
 
-            // Формируем итоговый SVG код
             const svgHTML = `
                 <svg width="${svgWidth}" height="${svgHeight}" style="display: block;">
                     <line x1="${paddingX}" y1="${svgHeight - paddingYBottom + 5}" x2="${svgWidth - paddingX}" y2="${svgHeight - paddingYBottom + 5}" stroke="var(--border)" stroke-width="1" />
-                    <polyline points="${polylinePoints.join(' ')}" fill="none" stroke="var(--text-color)" stroke-width="2" stroke-linejoin="round" />
-                    ${circlesHTML}
-                    ${textsHTML}
+                    <polyline points="${polylinePoints.join(' ')}" fill="none" stroke="var(--text-color)" stroke-width="2" stroke-linejoin="round" style="pointer-events:none;" />
+                    ${graphicsHTML}
                 </svg>
             `;
 
             chartArea.innerHTML = svgHTML;
 
-            // Автоматически проматываем график в самый конец (к свежим датам), если дней много
             setTimeout(() => {
                 chartArea.scrollLeft = chartArea.scrollWidth;
             }, 50);
         }
 
-        // Запуск
         initPickers();
         updateShiftPricing();
         
