@@ -27,7 +27,8 @@
             background-color: var(--bg-color);
             color: var(--text-color);
             margin: 0;
-            padding: env(safe-area-inset-top) 20px 60px 20px;
+            /* Убрали боковые паддинги у body, чтобы слайдер был на 100% ширины */
+            padding: env(safe-area-inset-top) 0 60px 0;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -52,8 +53,9 @@
             justify-content: space-between;
             align-items: center;
             width: 100%;
-            max-width: 400px;
-            margin: 10px 0 5px 0;
+            max-width: 440px;
+            padding: 10px 20px 5px 20px;
+            box-sizing: border-box;
         }
 
         .app-title {
@@ -65,41 +67,58 @@
         }
 
         .settings-btn {
-            background: none;
-            border: none;
-            color: var(--muted);
-            padding: 5px;
-            cursor: pointer;
-            transition: color 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            background: none; border: none; color: var(--muted); padding: 5px;
+            cursor: pointer; transition: color 0.2s; display: flex; align-items: center; justify-content: center;
         }
         .settings-btn:active { color: var(--text-color); }
         .settings-btn svg { width: 22px; height: 22px; }
 
         .status-badge {
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-            color: var(--muted);
-            width: 100%;
-            max-width: 400px;
-            margin-bottom: 30px;
-            letter-spacing: 1px;
-            display: flex;
-            justify-content: space-between;
+            font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--muted);
+            width: 100%; max-width: 440px; padding: 0 20px; box-sizing: border-box;
+            margin-bottom: 30px; letter-spacing: 1px; display: flex; justify-content: space-between;
         }
 
         #db-status { color: var(--accent); }
 
-        /* Контейнеры экранов */
-        .view-section {
-            display: none; width: 100%; max-width: 400px; flex-direction: column; animation: fadeIn 0.2s ease-out;
+        /* === СЛАЙДЕР ЭКРАНОВ === */
+        .slider-viewport {
+            width: 100%;
+            flex: 1;
+            overflow: hidden; /* Скрываем то, что выходит за пределы экрана */
+            position: relative;
         }
 
+        .slider-track {
+            display: flex;
+            width: 200%; /* Два экрана = 200% */
+            height: 100%;
+            transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1); /* Плавное скольжение iOS */
+            will-change: transform;
+            align-items: flex-start;
+        }
+
+        .slider-page {
+            width: 50%; /* Половина от 200% = 100% экрана */
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0 20px;
+            box-sizing: border-box;
+        }
+
+        /* Ограничитель ширины контента внутри страницы */
+        .page-content {
+            width: 100%;
+            max-width: 400px;
+            display: flex;
+            flex-direction: column;
+        }
+
+
         /* Колесики */
-        .pickers-wrapper { display: flex; gap: 10px; width: 100%; max-width: 400px; margin-bottom: 30px; }
+        .pickers-wrapper { display: flex; gap: 10px; width: 100%; margin-bottom: 30px; }
         .picker-column { flex: 1; display: flex; flex-direction: column; align-items: center; }
         .picker-label { font-size: 12px; margin-bottom: 10px; font-weight: 600; text-transform: uppercase; color: var(--muted); }
         .picker-container {
@@ -255,66 +274,74 @@
         <span id="db-status">ПОДКЛЮЧЕНИЕ...</span>
     </div>
 
-    <div class="pickers-wrapper" id="pickers-section">
-        <div class="picker-column">
-            <div class="picker-label">Кальяны</div>
-            <div class="picker-container"><div class="picker" id="hookah-picker"><div class="spacer"></div><div class="spacer"></div></div></div>
-        </div>
-        <div class="picker-column">
-            <div class="picker-label">Замены</div>
-            <div class="picker-container"><div class="picker" id="replacement-picker"><div class="spacer"></div><div class="spacer"></div></div></div>
-        </div>
-    </div>
+    <div class="slider-viewport">
+        <div class="slider-track" id="slider-track">
+            
+            <div class="slider-page" id="page-0">
+                <div class="page-content">
+                    <div class="pickers-wrapper" id="pickers-section">
+                        <div class="picker-column">
+                            <div class="picker-label">Кальяны</div>
+                            <div class="picker-container"><div class="picker" id="hookah-picker"><div class="spacer"></div><div class="spacer"></div></div></div>
+                        </div>
+                        <div class="picker-column">
+                            <div class="picker-label">Замены</div>
+                            <div class="picker-container"><div class="picker" id="replacement-picker"><div class="spacer"></div><div class="spacer"></div></div></div>
+                        </div>
+                    </div>
 
-
-    <div class="view-section" id="view-calc" style="display: flex;">
-        <div class="report-row"><span>Оклад</span><span>7 000 ₸</span></div>
-        <div class="report-row"><span>Процент (10%)</span><span id="bonus-price">0 ₸</span></div>
-        <div class="divider"></div>
-        <div class="report-row total-row"><span>Итого</span><span class="total-price" id="total-price">7 000 ₸</span></div>
-        <button class="save-btn" onclick="saveCurrentShift()">
-            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
-            Сохранить смену
-        </button>
-    </div>
-
-
-    <div class="view-section" id="view-analytics">
-        <div class="filters">
-            <button class="filter-btn active" onclick="setFilter('3', this)">3 дня</button>
-            <button class="filter-btn" onclick="setFilter('7', this)">Неделя</button>
-            <button class="filter-btn" onclick="setFilter('30', this)">Месяц</button>
-            <button class="filter-btn" onclick="setFilter('all', this)">Все</button>
-            <button class="filter-btn" onclick="setFilter('custom', this)">Период</button>
-        </div>
-        <div class="date-inputs" id="custom-dates" style="display: none;">
-            <input type="date" id="date-start" onchange="generateReport()">
-            <input type="date" id="date-end" onchange="generateReport()">
-        </div>
-
-        <div class="chart-container"><div class="chart" id="trend-chart" onscroll="hideTooltip()"></div></div>
-
-        <div class="report-row"><span>Смен отработано</span><span id="stat-shifts">0</span></div>
-        <div class="report-row"><span>Сделано кальянов</span><span id="stat-hookahs">0</span></div>
-        
-        <div class="insights-block">
-            <div class="insight-row"><span>Средний чек:</span><span id="stat-avg">0 ₸</span></div>
-            <div class="insight-row"><span>Лучший день:</span><span id="stat-best-day">-</span></div>
-        </div>
-        <div class="divider"></div>
-        <div class="report-row total-row"><span>Общий доход</span><span id="stat-total" style="font-size: 22px;">0 ₸</span></div>
-        
-        <button class="save-btn secondary-btn" onclick="toggleManualForm()">
-            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-            Добавить прошлую смену
-        </button>
-        <div id="manual-form" class="manual-form">
-            <input type="date" id="manual-date">
-            <div style="display: flex; gap: 10px;">
-                <input type="number" id="manual-hookahs" placeholder="Кальяны">
-                <input type="number" id="manual-replacements" placeholder="Замены">
+                    <div class="report-row"><span>Оклад</span><span>7 000 ₸</span></div>
+                    <div class="report-row"><span>Процент (10%)</span><span id="bonus-price">0 ₸</span></div>
+                    <div class="divider"></div>
+                    <div class="report-row total-row"><span>Итого</span><span class="total-price" id="total-price">7 000 ₸</span></div>
+                    <button class="save-btn" onclick="saveCurrentShift()">
+                        <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                        Сохранить смену
+                    </button>
+                </div>
             </div>
-            <button class="save-btn" style="margin-top: 0;" onclick="saveManualShift()">Записать</button>
+
+            <div class="slider-page" id="page-1">
+                <div class="page-content">
+                    <div class="filters">
+                        <button class="filter-btn active" onclick="setFilter('3', this)">3 дня</button>
+                        <button class="filter-btn" onclick="setFilter('7', this)">Неделя</button>
+                        <button class="filter-btn" onclick="setFilter('30', this)">Месяц</button>
+                        <button class="filter-btn" onclick="setFilter('all', this)">Все</button>
+                        <button class="filter-btn" onclick="setFilter('custom', this)">Период</button>
+                    </div>
+                    <div class="date-inputs" id="custom-dates" style="display: none;">
+                        <input type="date" id="date-start" onchange="generateReport()">
+                        <input type="date" id="date-end" onchange="generateReport()">
+                    </div>
+
+                    <div class="chart-container"><div class="chart" id="trend-chart" onscroll="hideTooltip()"></div></div>
+
+                    <div class="report-row"><span>Смен отработано</span><span id="stat-shifts">0</span></div>
+                    <div class="report-row"><span>Сделано кальянов</span><span id="stat-hookahs">0</span></div>
+                    
+                    <div class="insights-block">
+                        <div class="insight-row"><span>Средний чек:</span><span id="stat-avg">0 ₸</span></div>
+                        <div class="insight-row"><span>Лучший день:</span><span id="stat-best-day">-</span></div>
+                    </div>
+                    <div class="divider"></div>
+                    <div class="report-row total-row"><span>Общий доход</span><span id="stat-total" style="font-size: 22px;">0 ₸</span></div>
+                    
+                    <button class="save-btn secondary-btn" onclick="toggleManualForm()">
+                        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        Добавить прошлую смену
+                    </button>
+                    <div id="manual-form" class="manual-form">
+                        <input type="date" id="manual-date">
+                        <div style="display: flex; gap: 10px;">
+                            <input type="number" id="manual-hookahs" placeholder="Кальяны">
+                            <input type="number" id="manual-replacements" placeholder="Замены">
+                        </div>
+                        <button class="save-btn" style="margin-top: 0;" onclick="saveManualShift()">Записать</button>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -377,14 +404,15 @@
         document.getElementById('settings-box').addEventListener('mousedown', e => e.stopPropagation());
 
 
-        // --- ЛОГИКА НАВИГАЦИИ (СВАЙПЫ) ---
+        // --- ЛОГИКА НАВИГАЦИИ (ПЛАВНЫЙ СЛАЙДЕР) ---
         let currentPage = 0;
+        const sliderTrack = document.getElementById('slider-track');
 
         function switchPage(pageIndex) {
             currentPage = pageIndex;
-            document.getElementById('view-calc').style.display = (pageIndex === 0) ? 'flex' : 'none';
-            document.getElementById('view-analytics').style.display = (pageIndex === 1) ? 'flex' : 'none';
-            document.getElementById('pickers-section').style.display = (pageIndex === 1) ? 'none' : 'flex';
+            
+            // Сдвигаем трек на нужный экран (0% для первого, -50% для второго)
+            sliderTrack.style.transform = `translateX(-${pageIndex * 50}%)`;
 
             const title = document.getElementById('main-title');
             if (pageIndex === 0) title.textContent = 'Смена';
@@ -397,19 +425,29 @@
             hideTooltip();
         }
 
-        let startX = 0, startY = 0, isDragging = false;
+        let startX = 0, startY = 0, isDragging = false, ignoreSwipe = false;
         
         document.addEventListener('mousedown', e => { 
             isDragging = true; startX = e.clientX; startY = e.clientY; 
-            if (!(e.target.classList && e.target.classList.contains('chart-node-hitbox'))) hideTooltip();
+            // Проверка, начался ли жест на графике
+            ignoreSwipe = !!e.target.closest('.chart-container');
+            if (!ignoreSwipe && !(e.target.classList && e.target.classList.contains('chart-node-hitbox'))) hideTooltip();
         });
-        document.addEventListener('mouseup', e => { if(isDragging) { handleSwipe(e.clientX, e.clientY); isDragging = false; } });
+        document.addEventListener('mouseup', e => { 
+            if(isDragging && !ignoreSwipe) { handleSwipe(e.clientX, e.clientY); } 
+            isDragging = false; 
+        });
         
         document.addEventListener('touchstart', e => { 
             startX = e.touches[0].clientX; startY = e.touches[0].clientY; 
-            if (!(e.target.classList && e.target.classList.contains('chart-node-hitbox'))) hideTooltip();
+            // ФИКС: Если тапнули в зоне графика, блокируем глобальный свайп страницы
+            ignoreSwipe = !!e.target.closest('.chart-container');
+            if (!ignoreSwipe && !(e.target.classList && e.target.classList.contains('chart-node-hitbox'))) hideTooltip();
         }, {passive: true});
-        document.addEventListener('touchend', e => { handleSwipe(e.changedTouches[0].clientX, e.changedTouches[0].clientY); });
+        
+        document.addEventListener('touchend', e => { 
+            if (!ignoreSwipe) handleSwipe(e.changedTouches[0].clientX, e.changedTouches[0].clientY); 
+        });
 
         function handleSwipe(endX, endY) {
             if (document.getElementById('settings-modal').style.display === 'flex') return;
