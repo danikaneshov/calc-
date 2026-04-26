@@ -11,7 +11,7 @@
             --highlight: #111111;
             --muted: #666666;
             --border: #222222;
-            --accent: #ff9800; /* Цвет для рекордов */
+            --accent: #ff9800; 
         }
 
         body {
@@ -26,9 +26,12 @@
             min-height: 100vh;
             box-sizing: border-box;
             letter-spacing: -0.5px;
+            transition: background-color 0.3s ease;
+            overflow-x: hidden;
         }
 
-        h1 {
+        /* Заголовки */
+        .app-title {
             font-size: 24px;
             font-weight: 800;
             margin: 10px 0 5px 0;
@@ -36,6 +39,12 @@
             letter-spacing: 2px;
             width: 100%;
             max-width: 400px;
+            transition: color 0.3s;
+        }
+
+        .admin-title {
+            display: none;
+            color: var(--text-color);
         }
 
         .status-badge {
@@ -239,101 +248,56 @@
             max-width: 400px;
             margin-top: 50px;
             position: relative;
+            transition: opacity 0.3s ease;
         }
 
-        .filters {
-            display: flex;
-            gap: 5px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
+        .filters { display: flex; gap: 5px; margin-bottom: 20px; flex-wrap: wrap; }
         .filter-btn {
-            flex: 1;
-            padding: 8px 2px;
-            background: transparent;
-            border: 1px solid var(--border);
-            color: var(--muted);
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.2s ease;
+            flex: 1; padding: 8px 2px; background: transparent; border: 1px solid var(--border);
+            color: var(--muted); font-size: 11px; font-weight: 600; text-transform: uppercase;
+            border-radius: 4px; cursor: pointer; transition: all 0.2s ease;
         }
+        .filter-btn.active { background: var(--text-color); color: var(--bg-color); border-color: var(--text-color); }
 
-        .filter-btn.active {
-            background: var(--text-color);
-            color: var(--bg-color);
-            border-color: var(--text-color);
-        }
-
-        .date-inputs {
-            display: flex;
-            gap: 5px;
-            width: 100%;
-            margin-top: 5px;
-        }
-        
+        .date-inputs { display: flex; gap: 5px; width: 100%; margin-top: 5px; }
         .date-inputs input {
-            flex: 1;
-            background: transparent;
-            border: 1px solid var(--border);
-            color: var(--text-color);
-            padding: 8px;
-            border-radius: 4px;
-            font-family: inherit;
-            font-size: 12px;
-            color-scheme: dark;
+            flex: 1; background: transparent; border: 1px solid var(--border); color: var(--text-color);
+            padding: 8px; border-radius: 4px; font-family: inherit; font-size: 12px; color-scheme: dark;
         }
 
-        /* График */
-        .chart-container {
-            position: relative;
-            width: 100%;
-            margin-bottom: 20px;
-        }
-
+        .chart-container { position: relative; width: 100%; margin-bottom: 20px; }
         .chart {
-            width: 100%;
-            height: 140px;
-            border-bottom: 1px solid var(--border);
-            overflow-x: auto;
-            overflow-y: hidden;
-            -ms-overflow-style: none;  
-            scrollbar-width: none;  
-            scroll-behavior: smooth;
+            width: 100%; height: 140px; border-bottom: 1px solid var(--border);
+            overflow-x: auto; overflow-y: hidden; -ms-overflow-style: none; scrollbar-width: none; scroll-behavior: smooth;
         }
         .chart::-webkit-scrollbar { display: none; }
         .chart-node-hitbox { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 
-        /* Всплывающая подсказка */
         .chart-tooltip {
-            position: fixed;
-            background: rgba(28, 28, 30, 0.7);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: var(--text-color);
-            padding: 10px 14px;
-            border-radius: 8px;
-            font-size: 13px;
-            pointer-events: none;
-            opacity: 0;
-            transform: translate(-50%, 10px);
-            transition: opacity 0.2s ease, transform 0.2s ease;
-            z-index: 100;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            text-align: center;
+            position: fixed; background: rgba(28, 28, 30, 0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1); color: var(--text-color); padding: 10px 14px; border-radius: 8px;
+            font-size: 13px; pointer-events: none; opacity: 0; transform: translate(-50%, 10px);
+            transition: opacity 0.2s ease, transform 0.2s ease; z-index: 100; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center;
         }
-        .chart-tooltip.visible {
-            opacity: 1;
-            transform: translate(-50%, -15px);
-        }
+        .chart-tooltip.visible { opacity: 1; transform: translate(-50%, -15px); }
         .tooltip-date { font-size: 10px; color: var(--muted); text-transform: uppercase; font-weight: 800; letter-spacing: 1px; margin-bottom: 4px; }
         .tooltip-total { font-size: 18px; font-weight: 800; color: var(--text-color); margin-bottom: 4px; font-variant-numeric: tabular-nums;}
         .tooltip-details { font-size: 11px; color: var(--muted); font-weight: 600; }
         .tooltip-details span { color: var(--text-color); }
+
+        /* === РЕЖИМ СВЕРКИ (АДМИН) === */
+        .admin-view { display: none; }
+        
+        body.admin-mode {
+            background-color: #050505; /* Чуть темнее для визуального отличия */
+        }
+        body.admin-mode .personal-view { display: none !important; }
+        body.admin-mode .admin-view { display: flex !important; }
+        body.admin-mode .admin-title { display: block; color: var(--muted); }
+        body.admin-mode .personal-title { display: none; }
+        body.admin-mode .analytics-section { display: none !important; }
+        body.admin-mode .save-btn { display: none !important; }
+        body.admin-mode #db-status { display: none; } /* Скрываем статус базы от глаз админа */
 
     </style>
 </head>
@@ -345,7 +309,9 @@
         <div class="tooltip-details" id="tt-details">--</div>
     </div>
 
-    <h1>Смена</h1>
+    <h1 class="app-title personal-title">Смена</h1>
+    <h1 class="app-title admin-title">Сверка Кассы</h1>
+
     <div class="status-badge">
         <span id="shift-status">Загрузка...</span>
         <span id="db-status">ПОДКЛЮЧЕНИЕ...</span>
@@ -363,11 +329,21 @@
     </div>
 
     <div class="result-card">
-        <div class="report-row"><span>Оклад</span><span>7 000 ₸</span></div>
-        <div class="report-row"><span>Процент (10%)</span><span id="bonus-price">0 ₸</span></div>
-        <div class="divider"></div>
-        <div class="report-row total-row"><span>Итого</span><span class="total-price" id="total-price">7 000 ₸</span></div>
-        <button class="save-btn" onclick="saveCurrentShift()">Сохранить смену</button>
+        <div class="personal-view" style="display: block; width: 100%;">
+            <div class="report-row"><span>Оклад</span><span>7 000 ₸</span></div>
+            <div class="report-row"><span>Процент (10%)</span><span id="bonus-price">0 ₸</span></div>
+            <div class="divider"></div>
+            <div class="report-row total-row"><span>Мой итог</span><span class="total-price" id="total-price">7 000 ₸</span></div>
+        </div>
+
+        <div class="admin-view" style="flex-direction: column; width: 100%;">
+            <div class="report-row"><span>Кальяны (Касса)</span><span id="admin-hookahs-money">0 ₸</span></div>
+            <div class="report-row"><span>Замены (Касса)</span><span id="admin-replacements-money">0 ₸</span></div>
+            <div class="divider"></div>
+            <div class="report-row total-row"><span>В кассу</span><span class="total-price" id="admin-total-price">0 ₸</span></div>
+        </div>
+
+        <button class="save-btn personal-view" onclick="saveCurrentShift()">Сохранить смену</button>
     </div>
 
     <div class="analytics-section">
@@ -451,6 +427,40 @@
         let shiftDataCache = {};
 
         const fmt = (num) => num.toLocaleString('ru-RU');
+
+        // --- ЛОГИКА СВАЙПА (РЕЖИМ СВЕРКИ) ---
+        let touchstartX = 0;
+        let touchstartY = 0;
+        let touchendX = 0;
+        let touchendY = 0;
+
+        function handleGesture() {
+            const diffX = touchendX - touchstartX;
+            const diffY = touchendY - touchstartY;
+
+            // Проверяем, что свайп был горизонтальным (длина по X больше длины по Y) и достаточно длинным (более 50px)
+            if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
+                if (diffX > 0) {
+                    // Свайп ВПРАВО -> Режим Админа
+                    document.body.classList.add('admin-mode');
+                } else {
+                    // Свайп ВЛЕВО -> Личный режим
+                    document.body.classList.remove('admin-mode');
+                }
+            }
+        }
+
+        document.addEventListener('touchstart', e => {
+            touchstartX = e.changedTouches[0].screenX;
+            touchstartY = e.changedTouches[0].screenY;
+        });
+
+        document.addEventListener('touchend', e => {
+            touchendX = e.changedTouches[0].screenX;
+            touchendY = e.changedTouches[0].screenY;
+            handleGesture();
+        });
+
 
         // --- Firebase ---
         async function fetchAllShifts() {
@@ -572,7 +582,7 @@
             if (!e.target.closest('.chart-container')) hideTooltip();
         });
 
-        // --- Калькулятор и Вибрация ---
+        // --- Калькулятор ---
         function initPickers() {
             const hPicker = document.getElementById('hookah-picker');
             const rPicker = document.getElementById('replacement-picker');
@@ -606,7 +616,6 @@
                 items[index].classList.add('active');
                 const val = parseInt(items[index].dataset.value);
                 
-                // Виброотклик (Только Android)
                 if (type === 'hookah') {
                     if (lastHookahIndex !== -1 && lastHookahIndex !== index && navigator.vibrate) navigator.vibrate(5);
                     lastHookahIndex = index;
@@ -640,9 +649,19 @@
         }
 
         function calculateTotal() {
+            // Расчет для тебя
             finalSum = BASE_SALARY + Math.round((hookahCount * currentHookahPrice + replacementCount * currentReplacementPrice) * 0.10);
             document.getElementById('bonus-price').textContent = fmt(finalSum - BASE_SALARY) + ' ₸';
             document.getElementById('total-price').textContent = fmt(finalSum) + ' ₸';
+
+            // Расчет для админа (Сверка кассы)
+            const adminHookahTotal = hookahCount * currentHookahPrice;
+            const adminReplacementTotal = replacementCount * currentReplacementPrice;
+            const adminTotalSum = adminHookahTotal + adminReplacementTotal;
+
+            document.getElementById('admin-hookahs-money').textContent = fmt(adminHookahTotal) + ' ₸';
+            document.getElementById('admin-replacements-money').textContent = fmt(adminReplacementTotal) + ' ₸';
+            document.getElementById('admin-total-price').textContent = fmt(adminTotalSum) + ' ₸';
         }
 
         window.setFilter = function(type, btnObj) {
@@ -683,7 +702,6 @@
         function renderStatsAndChart(dates, dbData) {
             let sumTotal = 0, sumHookahs = 0, shiftsWorked = 0, maxDailyTotal = 1;
             
-            // Для вычисления лучшего дня
             let dayTotals = {0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0};
             let dayCounts = {0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0};
 
@@ -700,7 +718,6 @@
                 }
             });
 
-            // Инсайты: Средний чек и Лучший день
             const avgShift = shiftsWorked > 0 ? Math.round(sumTotal / shiftsWorked) : 0;
             let bestDayIndex = -1, bestDayAvg = 0;
             for(let i = 0; i < 7; i++) {
@@ -717,7 +734,6 @@
             document.getElementById('stat-avg').textContent = fmt(avgShift) + ' ₸';
             document.getElementById('stat-best-day').textContent = bestDayIndex !== -1 ? daysNames[bestDayIndex] : '-';
 
-            // Отрисовка графика
             const chartArea = document.getElementById('trend-chart');
             if (dates.length === 0) return chartArea.innerHTML = '';
 
@@ -742,7 +758,6 @@
                 const shortDate = date.split('-')[2] + '.' + date.split('-')[1];
                 const dateLabelFull = new Date(date).toLocaleDateString('ru-RU', {day: 'numeric', month: 'long'});
                 
-                // Проверка на рекорд
                 if (val === maxDailyTotal && val > 0) {
                     graphicsHTML += `<circle cx="${x}" cy="${y}" r="6" fill="var(--bg-color)" stroke="var(--accent)" stroke-width="2" style="pointer-events:none;" />`;
                     graphicsHTML += `<text x="${x}" y="${y - 12}" fill="var(--accent)" font-size="9" font-weight="bold" font-family="sans-serif" text-anchor="middle" style="pointer-events:none;">MAX</text>`;
