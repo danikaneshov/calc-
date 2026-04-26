@@ -180,7 +180,6 @@
         }
         .save-btn:active { opacity: 0.7; }
 
-        /* Вторичная кнопка */
         .secondary-btn {
             background-color: var(--highlight);
             color: var(--muted);
@@ -267,45 +266,20 @@
             color-scheme: dark;
         }
 
-        /* График */
+        /* Линейный график */
         .chart {
-            display: flex;
-            align-items: flex-end;
-            justify-content: space-between;
-            height: 100px;
-            margin-bottom: 20px;
-            padding-bottom: 5px;
-            border-bottom: 1px solid var(--border);
-            gap: 4px;
-        }
-
-        .bar-wrapper {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-            align-items: center;
-            height: 100%;
-            position: relative;
-        }
-
-        .bar {
             width: 100%;
-            max-width: 20px;
-            background-color: var(--muted);
-            border-radius: 2px 2px 0 0;
-            transition: height 0.3s ease, background-color 0.3s;
+            height: 140px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+            overflow-x: auto;
+            overflow-y: hidden;
+            -ms-overflow-style: none;  /* Скрываем скроллбар в IE и Edge */
+            scrollbar-width: none;  /* Скрываем скроллбар в Firefox */
+            scroll-behavior: smooth;
         }
-
-        .bar-wrapper:last-child .bar {
-            background-color: var(--text-color);
-        }
-
-        .bar-label {
-            font-size: 9px;
-            color: var(--muted);
-            margin-top: 4px;
-            font-variant-numeric: tabular-nums;
+        .chart::-webkit-scrollbar {
+            display: none; /* Скрываем скроллбар в Chrome, Safari */
         }
     </style>
 </head>
@@ -477,7 +451,6 @@
                 return;
             }
 
-            // Вычисляем тариф для выбранного дня
             const dateObj = new Date(dateInput);
             const day = dateObj.getDay();
             const isWeekend = (day === 5 || day === 6 || day === 0);
@@ -504,7 +477,6 @@
                 shiftDataCache[dateInput] = shiftObj;
                 generateReport();
                 
-                // Очищаем и прячем форму
                 document.getElementById('manual-date').value = '';
                 document.getElementById('manual-hookahs').value = '';
                 document.getElementById('manual-replacements').value = '';
@@ -629,6 +601,7 @@
             let shiftsWorked = 0;
             let maxDailyTotal = 1;
 
+            // Подсчет статистики и нахождение максимума для шкалы графика
             dates.forEach(date => {
                 if(dbData[date]) {
                     shiftsWorked++;
@@ -646,29 +619,74 @@
             document.getElementById('stat-bonus').textContent = fmt(sumBonus) + ' ₸';
             document.getElementById('stat-total').textContent = fmt(sumTotal) + ' ₸';
 
+            // === ОТРИСОВКА ЛИНЕЙНОГО ГРАФИКА (SVG) ===
             const chartArea = document.getElementById('trend-chart');
-            chartArea.innerHTML = '';
+            if (dates.length === 0) {
+                chartArea.innerHTML = '';
+                return;
+            }
 
-            dates.forEach(date => {
-                const dayData = dbData[date] || { total: 0 };
-                const heightPercent = (dayData.total / maxDailyTotal) * 100;
-                const shortDate = date.split('-')[2];
+            // Динамическая ширина для скролла
+            const minSpacePerPoint = 40; // Минимум 40px на каждый день
+            const containerWidth = chartArea.clientWidth || 360;
+            const svgWidth = Math.max(containerWidth, dates.length * minSpacePerPoint);
+            const svgHeight = 120;
+            
+            const paddingX = 20;
+            const paddingYTop = 20;
+            const paddingYBottom = 30; // Место для дат
+            
+            let polylinePoints = [];
+            let circlesHTML = '';
+            let textsHTML = '';
 
-                const barWrap = document.createElement('div');
-                barWrap.className = 'bar-wrapper';
-                barWrap.innerHTML = `
-                    <div class="bar" style="height: ${heightPercent}%"></div>
-                    <div class="bar-label">${shortDate}</div>
-                `;
-                chartArea.appendChild(barWrap);
+            dates.forEach((date, i) => {
+                const val = dbData[date] ? dbData[date].total : 0;
+                
+                // Координата X
+                let x;
+                if (dates.length === 1) {
+                    x = svgWidth / 2;
+                } else {
+                    x = paddingX + (i * (svgWidth - 2 * paddingX) / (dates.length - 1));
+                }
+                
+                // Координата Y (перевернутая ось)
+                const yRange = svgHeight - paddingYTop - paddingYBottom;
+                const y = paddingYTop + yRange - (val / maxDailyTotal) * yRange;
+
+                polylinePoints.push(`${x},${y}`);
+
+                // Точка на графике
+                circlesHTML += `<circle cx="${x}" cy="${y}" r="4" fill="var(--bg-color)" stroke="var(--text-color)" stroke-width="2" />`;
+                
+                // Текст даты снизу
+                const shortDate = date.split('-')[2] + '.' + date.split('-')[1];
+                textsHTML += `<text x="${x}" y="${svgHeight - 10}" fill="var(--muted)" font-size="10" font-family="sans-serif" text-anchor="middle">${shortDate}</text>`;
             });
+
+            // Формируем итоговый SVG код
+            const svgHTML = `
+                <svg width="${svgWidth}" height="${svgHeight}" style="display: block;">
+                    <line x1="${paddingX}" y1="${svgHeight - paddingYBottom + 5}" x2="${svgWidth - paddingX}" y2="${svgHeight - paddingYBottom + 5}" stroke="var(--border)" stroke-width="1" />
+                    <polyline points="${polylinePoints.join(' ')}" fill="none" stroke="var(--text-color)" stroke-width="2" stroke-linejoin="round" />
+                    ${circlesHTML}
+                    ${textsHTML}
+                </svg>
+            `;
+
+            chartArea.innerHTML = svgHTML;
+
+            // Автоматически проматываем график в самый конец (к свежим датам), если дней много
+            setTimeout(() => {
+                chartArea.scrollLeft = chartArea.scrollWidth;
+            }, 50);
         }
 
         // Запуск
         initPickers();
         updateShiftPricing();
         
-        // Ставим дефолтные даты
         const dEnd = getShiftDate();
         const dStart = new Date(dEnd.getFullYear(), dEnd.getMonth(), 1);
         document.getElementById('date-end').value = dEnd.toISOString().split('T')[0];
@@ -684,7 +702,6 @@
             calculateTotal();
         }, 60000);
 
-        // Тянем базу из Firebase при открытии
         fetchAllShifts();
 
     </script>
