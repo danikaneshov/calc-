@@ -429,37 +429,33 @@
         const fmt = (num) => num.toLocaleString('ru-RU');
 
         // --- ЛОГИКА СВАЙПА (РЕЖИМ СВЕРКИ) ---
-        let touchstartX = 0;
-        let touchstartY = 0;
-        let touchendX = 0;
-        let touchendY = 0;
+        let startX = 0;
+        let startY = 0;
 
-        function handleGesture() {
-            const diffX = touchendX - touchstartX;
-            const diffY = touchendY - touchstartY;
+        // Запоминаем старт (и для мыши, и для пальца)
+        document.addEventListener('mousedown', e => { startX = e.screenX; startY = e.screenY; });
+        document.addEventListener('touchstart', e => { startX = e.changedTouches[0].screenX; startY = e.changedTouches[0].screenY; });
 
-            // Проверяем, что свайп был горизонтальным (длина по X больше длины по Y) и достаточно длинным (более 50px)
-            if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
+        // Обрабатываем конец свайпа
+        document.addEventListener('mouseup', e => handleGesture(e.screenX, e.screenY));
+        document.addEventListener('touchend', e => handleGesture(e.changedTouches[0].screenX, e.changedTouches[0].screenY));
+
+        function handleGesture(endX, endY) {
+            const diffX = endX - startX;
+            const diffY = endY - startY;
+
+            // Проверяем, что это именно свайп (длиннее 40px), а не просто тап/клик, 
+            // и что он горизонтальный (по оси X движение больше, чем по Y)
+            if (Math.abs(diffX) > 40 && Math.abs(diffX) > Math.abs(diffY)) {
                 if (diffX > 0) {
-                    // Свайп ВПРАВО -> Режим Админа
+                    // Свайп вправо -> Режим для Нурбола
                     document.body.classList.add('admin-mode');
                 } else {
-                    // Свайп ВЛЕВО -> Личный режим
+                    // Свайп влево -> Возврат к твоим доходам
                     document.body.classList.remove('admin-mode');
                 }
             }
         }
-
-        document.addEventListener('touchstart', e => {
-            touchstartX = e.changedTouches[0].screenX;
-            touchstartY = e.changedTouches[0].screenY;
-        });
-
-        document.addEventListener('touchend', e => {
-            touchendX = e.changedTouches[0].screenX;
-            touchendY = e.changedTouches[0].screenY;
-            handleGesture();
-        });
 
 
         // --- Firebase ---
@@ -523,279 +519,4 @@
             const isWeekend = (day === 5 || day === 6 || day === 0);
             const hPrice = isWeekend ? 7900 : 4900;
             const rPrice = isWeekend ? 5900 : 4490;
-            const total = BASE_SALARY + Math.round((hookahs * hPrice + replacements * rPrice) * 0.10);
-
-            const shiftObj = { total, hookahs, replacements, timestamp: Date.now() };
-            const btn = document.querySelector('#manual-form .save-btn');
-            const ogText = btn.textContent;
-            btn.textContent = "СОХРАНЕНИЕ...";
-
-            try {
-                await setDoc(doc(db, "shifts", dateInput), shiftObj);
-                shiftDataCache[dateInput] = shiftObj;
-                generateReport();
-                document.getElementById('manual-date').value = '';
-                document.getElementById('manual-hookahs').value = '';
-                document.getElementById('manual-replacements').value = '';
-                toggleManualForm();
-            } catch (error) {
-                alert("Ошибка БД.");
-            } finally {
-                btn.textContent = ogText;
-            }
-        };
-
-        // --- Тултип ---
-        window.showTooltip = function(event, dateLabel, total, hookahs, replacements, nodeId) {
-            const tooltip = document.getElementById('tooltip');
-            document.getElementById('tt-date').textContent = dateLabel;
-            document.getElementById('tt-total').textContent = fmt(total) + ' ₸';
-            document.getElementById('tt-details').innerHTML = `К: <span>${hookahs}</span> | З: <span>${replacements}</span>`;
-            
-            document.querySelectorAll('.active-node').forEach(el => el.remove());
-            const target = event.currentTarget;
-            const cx = target.getAttribute('cx');
-            const cy = target.getAttribute('cy');
-            
-            const chartArea = document.getElementById('trend-chart').querySelector('svg');
-            const glow = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-            glow.setAttribute('cx', cx);
-            glow.setAttribute('cy', cy);
-            glow.setAttribute('r', '8');
-            glow.setAttribute('fill', 'rgba(255,255,255,0.3)');
-            glow.setAttribute('class', 'active-node');
-            glow.style.pointerEvents = 'none';
-            chartArea.appendChild(glow);
-
-            const rect = target.getBoundingClientRect();
-            tooltip.style.left = rect.left + (rect.width / 2) + 'px';
-            tooltip.style.top = rect.top + 'px';
-            tooltip.classList.add('visible');
-        };
-
-        window.hideTooltip = function() {
-            document.getElementById('tooltip').classList.remove('visible');
-            document.querySelectorAll('.active-node').forEach(el => el.remove());
-        };
-
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.chart-container')) hideTooltip();
-        });
-
-        // --- Калькулятор ---
-        function initPickers() {
-            const hPicker = document.getElementById('hookah-picker');
-            const rPicker = document.getElementById('replacement-picker');
-            
-            [hPicker, rPicker].forEach(picker => {
-                const spacerBottom = picker.lastElementChild;
-                for (let r = 0; r < REPEATS; r++) {
-                    for (let i = 0; i <= MAX_VALUE; i++) {
-                        const div = document.createElement('div');
-                        div.className = 'picker-item';
-                        div.dataset.value = i;
-                        div.textContent = i;
-                        picker.insertBefore(div, spacerBottom);
-                    }
-                }
-                picker.style.scrollBehavior = 'auto';
-                picker.scrollTop = Math.floor(REPEATS / 2) * (MAX_VALUE + 1) * ITEM_HEIGHT;
-                setTimeout(() => picker.style.scrollBehavior = 'smooth', 50);
-            });
-
-            hPicker.addEventListener('scroll', () => handleScroll(hPicker, 'hookah'));
-            rPicker.addEventListener('scroll', () => handleScroll(rPicker, 'replacement'));
-        }
-
-        function handleScroll(picker, type) {
-            const index = Math.round(picker.scrollTop / ITEM_HEIGHT);
-            const items = picker.querySelectorAll('.picker-item');
-            items.forEach(item => item.classList.remove('active'));
-            
-            if (items[index]) {
-                items[index].classList.add('active');
-                const val = parseInt(items[index].dataset.value);
-                
-                if (type === 'hookah') {
-                    if (lastHookahIndex !== -1 && lastHookahIndex !== index && navigator.vibrate) navigator.vibrate(5);
-                    lastHookahIndex = index;
-                    hookahCount = val;
-                } else {
-                    if (lastReplacementIndex !== -1 && lastReplacementIndex !== index && navigator.vibrate) navigator.vibrate(5);
-                    lastReplacementIndex = index;
-                    replacementCount = val;
-                }
-                calculateTotal();
-            }
-        }
-
-        function getShiftDate() {
-            const now = new Date();
-            if (now.getHours() < 15) now.setDate(now.getDate() - 1); 
-            return now;
-        }
-
-        function updateShiftPricing() {
-            const shiftDate = getShiftDate();
-            const day = shiftDate.getDay();
-            shiftDateStr = shiftDate.toISOString().split('T')[0];
-
-            const isWeekend = (day === 5 || day === 6 || day === 0); 
-            currentHookahPrice = isWeekend ? 7900 : 4900;
-            currentReplacementPrice = isWeekend ? 5900 : 4490;
-
-            const days = ["ВС", "ПН", "ВТ", "СР", "ЧТ", "ПТ", "СБ"];
-            document.getElementById('shift-status').textContent = `${shiftDateStr} | ${days[day]} | ${isWeekend ? 'ВЫХОДНОЙ' : 'БУДНИЙ'} ТАРИФ`;
-        }
-
-        function calculateTotal() {
-            // Расчет для тебя
-            finalSum = BASE_SALARY + Math.round((hookahCount * currentHookahPrice + replacementCount * currentReplacementPrice) * 0.10);
-            document.getElementById('bonus-price').textContent = fmt(finalSum - BASE_SALARY) + ' ₸';
-            document.getElementById('total-price').textContent = fmt(finalSum) + ' ₸';
-
-            // Расчет для админа (Сверка кассы)
-            const adminHookahTotal = hookahCount * currentHookahPrice;
-            const adminReplacementTotal = replacementCount * currentReplacementPrice;
-            const adminTotalSum = adminHookahTotal + adminReplacementTotal;
-
-            document.getElementById('admin-hookahs-money').textContent = fmt(adminHookahTotal) + ' ₸';
-            document.getElementById('admin-replacements-money').textContent = fmt(adminReplacementTotal) + ' ₸';
-            document.getElementById('admin-total-price').textContent = fmt(adminTotalSum) + ' ₸';
-        }
-
-        window.setFilter = function(type, btnObj) {
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            btnObj.classList.add('active');
-            currentFilter = type;
-            document.getElementById('custom-dates').style.display = type === 'custom' ? 'flex' : 'none';
-            if(type !== 'custom') generateReport();
-        }
-
-        window.generateReport = function() {
-            const dates = Object.keys(shiftDataCache).sort();
-            if (dates.length === 0) return document.getElementById('trend-chart').innerHTML = '';
-
-            let targetDates = [];
-            const today = getShiftDate();
-            today.setHours(0,0,0,0);
-
-            if (currentFilter === 'all') {
-                targetDates = dates; 
-            } else if (currentFilter === 'custom') {
-                const start = document.getElementById('date-start').value;
-                const end = document.getElementById('date-end').value;
-                if (!start || !end) return;
-                targetDates = dates.filter(d => d >= start && d <= end);
-            } else {
-                const daysBack = parseInt(currentFilter);
-                for(let i = daysBack - 1; i >= 0; i--) {
-                    const d = new Date(today);
-                    d.setDate(d.getDate() - i);
-                    targetDates.push(d.toISOString().split('T')[0]);
-                }
-            }
-
-            renderStatsAndChart(targetDates, shiftDataCache);
-        }
-
-        function renderStatsAndChart(dates, dbData) {
-            let sumTotal = 0, sumHookahs = 0, shiftsWorked = 0, maxDailyTotal = 1;
-            
-            let dayTotals = {0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0};
-            let dayCounts = {0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0};
-
-            dates.forEach(date => {
-                if(dbData[date]) {
-                    shiftsWorked++;
-                    sumTotal += dbData[date].total;
-                    sumHookahs += dbData[date].hookahs;
-                    if(dbData[date].total > maxDailyTotal) maxDailyTotal = dbData[date].total;
-                    
-                    const dNum = new Date(date).getDay();
-                    dayTotals[dNum] += dbData[date].total;
-                    dayCounts[dNum] += 1;
-                }
-            });
-
-            const avgShift = shiftsWorked > 0 ? Math.round(sumTotal / shiftsWorked) : 0;
-            let bestDayIndex = -1, bestDayAvg = 0;
-            for(let i = 0; i < 7; i++) {
-                if(dayCounts[i] > 0) {
-                    let avg = dayTotals[i] / dayCounts[i];
-                    if(avg > bestDayAvg) { bestDayAvg = avg; bestDayIndex = i; }
-                }
-            }
-            const daysNames = ["Воскресенье", "Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"];
-
-            document.getElementById('stat-shifts').textContent = shiftsWorked;
-            document.getElementById('stat-hookahs').textContent = sumHookahs;
-            document.getElementById('stat-total').textContent = fmt(sumTotal) + ' ₸';
-            document.getElementById('stat-avg').textContent = fmt(avgShift) + ' ₸';
-            document.getElementById('stat-best-day').textContent = bestDayIndex !== -1 ? daysNames[bestDayIndex] : '-';
-
-            const chartArea = document.getElementById('trend-chart');
-            if (dates.length === 0) return chartArea.innerHTML = '';
-
-            const minSpacePerPoint = 45; 
-            const containerWidth = chartArea.clientWidth || 360;
-            const svgWidth = Math.max(containerWidth, dates.length * minSpacePerPoint);
-            const svgHeight = 140;
-            const paddingX = 25, paddingYTop = 30, paddingYBottom = 30; 
-            
-            let polylinePoints = [], graphicsHTML = '';
-
-            dates.forEach((date, i) => {
-                const dayData = dbData[date] || { total: 0, hookahs: 0, replacements: 0 };
-                const val = dayData.total;
-                
-                let x = dates.length === 1 ? svgWidth / 2 : paddingX + (i * (svgWidth - 2 * paddingX) / (dates.length - 1));
-                const yRange = svgHeight - paddingYTop - paddingYBottom;
-                const y = paddingYTop + yRange - (val / maxDailyTotal) * yRange;
-
-                polylinePoints.push(`${x},${y}`);
-
-                const shortDate = date.split('-')[2] + '.' + date.split('-')[1];
-                const dateLabelFull = new Date(date).toLocaleDateString('ru-RU', {day: 'numeric', month: 'long'});
-                
-                if (val === maxDailyTotal && val > 0) {
-                    graphicsHTML += `<circle cx="${x}" cy="${y}" r="6" fill="var(--bg-color)" stroke="var(--accent)" stroke-width="2" style="pointer-events:none;" />`;
-                    graphicsHTML += `<text x="${x}" y="${y - 12}" fill="var(--accent)" font-size="9" font-weight="bold" font-family="sans-serif" text-anchor="middle" style="pointer-events:none;">MAX</text>`;
-                } else {
-                    graphicsHTML += `<circle cx="${x}" cy="${y}" r="3" fill="var(--bg-color)" stroke="var(--text-color)" stroke-width="2" style="pointer-events:none;" id="node-${i}" />`;
-                }
-                
-                graphicsHTML += `<circle cx="${x}" cy="${y}" r="20" fill="transparent" class="chart-node-hitbox" onclick="showTooltip(event, '${dateLabelFull}', ${val}, ${dayData.hookahs}, ${dayData.replacements}, 'node-${i}')" />`;
-                graphicsHTML += `<text x="${x}" y="${svgHeight - 10}" fill="var(--muted)" font-size="10" font-family="sans-serif" text-anchor="middle" style="pointer-events:none;">${shortDate}</text>`;
-            });
-
-            chartArea.innerHTML = `
-                <svg width="${svgWidth}" height="${svgHeight}" style="display: block;">
-                    <line x1="${paddingX}" y1="${svgHeight - paddingYBottom + 5}" x2="${svgWidth - paddingX}" y2="${svgHeight - paddingYBottom + 5}" stroke="var(--border)" stroke-width="1" />
-                    <polyline points="${polylinePoints.join(' ')}" fill="none" stroke="var(--text-color)" stroke-width="2" stroke-linejoin="round" style="pointer-events:none;" />
-                    ${graphicsHTML}
-                </svg>
-            `;
-
-            setTimeout(() => chartArea.scrollLeft = chartArea.scrollWidth, 50);
-        }
-
-        initPickers();
-        updateShiftPricing();
-        
-        const dEnd = getShiftDate();
-        const dStart = new Date(dEnd.getFullYear(), dEnd.getMonth(), 1);
-        document.getElementById('date-end').value = dEnd.toISOString().split('T')[0];
-        document.getElementById('date-start').value = dStart.toISOString().split('T')[0];
-
-        setTimeout(() => {
-            handleScroll(document.getElementById('hookah-picker'), 'hookah');
-            handleScroll(document.getElementById('replacement-picker'), 'replacement');
-        }, 100);
-
-        setInterval(() => { updateShiftPricing(); calculateTotal(); }, 60000);
-        fetchAllShifts();
-
-    </script>
-</body>
-</html>
+            const total = BASE_SALARY
