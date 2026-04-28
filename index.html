@@ -171,7 +171,6 @@
             padding: 10px; border-radius: 4px; text-align: center; font-size: 14px; font-weight: 600; font-family: inherit; box-sizing: border-box;
         }
 
-        /* Мелкий шрифт для детализации дохода */
         .breakdown-row { font-size: 12px; margin-top: -5px; }
         .breakdown-row span:first-child { color: var(--muted); }
         .breakdown-row span:last-child { color: #aaaaaa; }
@@ -280,7 +279,7 @@
                     <div class="report-row"><span>Сделано кальянов</span><span id="stat-hookahs">0</span></div>
                     
                     <div class="insights-block">
-                        <div class="insight-row"><span>Средний чек:</span><span id="stat-avg">0 ₸</span></div>
+                        <div class="insight-row"><span>Средняя зп:</span><span id="stat-avg">0 ₸</span></div>
                         <div class="insight-row"><span>Лучший день:</span><span id="stat-best-day">-</span></div>
                     </div>
                     
@@ -535,7 +534,9 @@
 
         function render(dates) {
             let total=0, hookahs=0, worked=0, max=1, tipsTotal=0;
-            let dayTotals = {0:0,1:0,2:0,3:0,4:0,5:0,6:0}, dayCounts = {0:0,1:0,2:0,3:0,4:0,5:0,6:0};
+            let bestDateStr = '-';
+            let bestDateMax = 0;
+
             dates.forEach(d => {
                 if(shiftDataCache[d]) {
                     worked++; 
@@ -544,23 +545,28 @@
                     tipsTotal+=(shiftDataCache[d].tips || 0);
                     
                     if(shiftDataCache[d].total > max) max = shiftDataCache[d].total;
-                    const dn = new Date(d).getDay(); dayTotals[dn]+=shiftDataCache[d].total; dayCounts[dn]++;
+
+                    if(shiftDataCache[d].total > bestDateMax) {
+                        bestDateMax = shiftDataCache[d].total;
+                        bestDateStr = d;
+                    }
                 }
             });
             
             document.getElementById('stat-shifts').textContent = worked;
             document.getElementById('stat-hookahs').textContent = hookahs;
             
-            // Обновляем разбивку доходов
             document.getElementById('stat-total').textContent = fmt(total) + ' ₸';
             document.getElementById('stat-total-no-tips').textContent = fmt(total - tipsTotal) + ' ₸';
             document.getElementById('stat-total-tips').textContent = fmt(tipsTotal) + ' ₸';
             
             document.getElementById('stat-avg').textContent = worked ? fmt(Math.round(total/worked)) + ' ₸' : '0 ₸';
             
-            let best=-1, bVal=0; for(let i=0; i<7; i++) { if(dayCounts[i] && dayTotals[i]/dayCounts[i]>bVal){bVal=dayTotals[i]/dayCounts[i]; best=i;} }
-            const dns = ["Воскресенье","Понедельник","Вторник","Среда","Четверг","Пятница","Суббота"];
-            document.getElementById('stat-best-day').textContent = best !== -1 ? dns[best] : '-';
+            if (bestDateStr !== '-') {
+                const dateObj = new Date(bestDateStr);
+                bestDateStr = dateObj.toLocaleDateString('ru-RU');
+            }
+            document.getElementById('stat-best-day').textContent = bestDateStr;
 
             const chart = document.getElementById('trend-chart');
             if(!dates.length) return chart.innerHTML='';
