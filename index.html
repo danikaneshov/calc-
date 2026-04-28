@@ -1,19 +1,17 @@
 <!DOCTYPE html>
 <html lang="ru">
-
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Смена">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#000000">
-
+    
     <title>Смена / Аналитика</title>
-
+    
     <style>
         :root {
             --bg-color: #000000;
@@ -21,7 +19,7 @@
             --highlight: #111111;
             --muted: #666666;
             --border: #222222;
-            --accent: #ff9800;
+            --accent: #ff9800; 
         }
 
         body {
@@ -43,514 +41,143 @@
         }
 
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: scale(0.98);
-            }
-
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
+            from { opacity: 0; transform: scale(0.98); }
+            to { opacity: 1; transform: scale(1); }
         }
 
         .header-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-            max-width: 440px;
-            padding: 10px 20px 5px 20px;
-            box-sizing: border-box;
+            display: flex; justify-content: space-between; align-items: center;
+            width: 100%; max-width: 440px; padding: 10px 20px 5px 20px; box-sizing: border-box;
         }
 
-        .app-title {
-            font-size: 24px;
-            font-weight: 800;
-            margin: 0;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
+        .app-title { font-size: 24px; font-weight: 800; margin: 0; text-transform: uppercase; letter-spacing: 2px; }
 
         .settings-btn {
-            background: none;
-            border: none;
-            color: var(--muted);
-            padding: 5px;
-            cursor: pointer;
-            transition: color 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            background: none; border: none; color: var(--muted); padding: 5px;
+            cursor: pointer; transition: color 0.2s; display: flex; align-items: center; justify-content: center;
         }
-
-        .settings-btn:active {
-            color: var(--text-color);
-        }
-
-        .settings-btn svg {
-            width: 22px;
-            height: 22px;
-        }
+        .settings-btn:active { color: var(--text-color); }
+        .settings-btn svg { width: 22px; height: 22px; }
 
         .status-badge {
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-            color: var(--muted);
-            width: 100%;
-            max-width: 440px;
-            padding: 0 20px;
-            box-sizing: border-box;
-            margin-bottom: 30px;
-            letter-spacing: 1px;
-            display: flex;
-            justify-content: space-between;
+            font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--muted);
+            width: 100%; max-width: 440px; padding: 0 20px; box-sizing: border-box;
+            margin-bottom: 30px; letter-spacing: 1px; display: flex; justify-content: space-between;
         }
 
-        #db-status {
-            color: var(--accent);
-        }
+        #db-status { color: var(--accent); }
 
-        .slider-viewport {
-            width: 100%;
-            flex: 1;
-            overflow: hidden;
-            position: relative;
-        }
+        .slider-viewport { width: 100%; flex: 1; overflow: hidden; position: relative; }
+        .slider-track { display: flex; width: 200%; height: 100%; transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1); will-change: transform; align-items: flex-start; }
+        .slider-page { width: 50%; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; padding: 0 20px; box-sizing: border-box; }
+        .page-content { width: 100%; max-width: 400px; display: flex; flex-direction: column; }
 
-        .slider-track {
-            display: flex;
-            width: 200%;
-            height: 100%;
-            transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
-            will-change: transform;
-            align-items: flex-start;
-        }
-
-        .slider-page {
-            width: 50%;
-            flex-shrink: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 0 20px;
-            box-sizing: border-box;
-        }
-
-        .page-content {
-            width: 100%;
-            max-width: 400px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .pickers-wrapper {
-            display: flex;
-            gap: 10px;
-            width: 100%;
-            margin-bottom: 30px;
-        }
-
-        .picker-column {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .picker-label {
-            font-size: 12px;
-            margin-bottom: 10px;
-            font-weight: 600;
-            text-transform: uppercase;
-            color: var(--muted);
-        }
-
+        .pickers-wrapper { display: flex; gap: 10px; width: 100%; margin-bottom: 30px; }
+        .picker-column { flex: 1; display: flex; flex-direction: column; align-items: center; }
+        .picker-label { font-size: 12px; margin-bottom: 10px; font-weight: 600; text-transform: uppercase; color: var(--muted); }
         .picker-container {
-            height: 120px;
-            width: 100%;
-            position: relative;
-            background-color: var(--highlight);
-            border-radius: 4px;
-            overflow: hidden;
-            border: 1px solid var(--border);
+            height: 120px; width: 100%; position: relative; background-color: var(--highlight);
+            border-radius: 4px; overflow: hidden; border: 1px solid var(--border);
         }
-
         .picker-container::before {
-            content: "";
-            position: absolute;
-            top: 40px;
-            left: 0;
-            right: 0;
-            height: 40px;
-            background-color: rgba(255, 255, 255, 0.03);
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            pointer-events: none;
-            z-index: 2;
+            content: ""; position: absolute; top: 40px; left: 0; right: 0; height: 40px;
+            background-color: rgba(255, 255, 255, 0.03); border-top: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid rgba(255,255,255,0.1); pointer-events: none; z-index: 2;
         }
-
         .picker {
-            height: 100%;
-            overflow-y: scroll;
-            scroll-snap-type: y mandatory;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-            position: relative;
-            z-index: 1;
-            scroll-behavior: smooth;
+            height: 100%; overflow-y: scroll; scroll-snap-type: y mandatory;
+            scrollbar-width: none; -ms-overflow-style: none; position: relative; z-index: 1; scroll-behavior: smooth;
         }
-
-        .picker::-webkit-scrollbar {
-            display: none;
-        }
-
-        .spacer {
-            height: 40px;
-        }
-
+        .picker::-webkit-scrollbar { display: none; }
+        .spacer { height: 40px; }
         .picker-item {
-            height: 40px;
-            line-height: 40px;
-            text-align: center;
-            font-size: 18px;
-            font-weight: 600;
-            scroll-snap-align: center;
-            color: #333;
-            transition: all 0.2s ease;
-            cursor: pointer;
+            height: 40px; line-height: 40px; text-align: center; font-size: 18px; font-weight: 600;
+            scroll-snap-align: center; color: #333; transition: all 0.2s ease; cursor: pointer;
         }
+        .picker-item.active { color: var(--text-color); font-size: 24px; }
 
-        .picker-item.active {
-            color: var(--text-color);
-            font-size: 24px;
-        }
+        .report-row { display: flex; justify-content: space-between; align-items: flex-end; padding: 8px 0; font-size: 14px; color: var(--muted); }
+        .report-row span:last-child { font-weight: 600; color: var(--text-color); font-variant-numeric: tabular-nums; display: flex; align-items: center;}
+        .divider { border: none; border-top: 1px solid var(--border); margin: 15px 0; }
+        .total-row span:first-child { font-weight: 800; text-transform: uppercase; color: var(--text-color); }
+        .total-price { font-size: 28px; font-weight: 800; }
 
-        .report-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            padding: 8px 0;
-            font-size: 14px;
-            color: var(--muted);
-        }
-
-        .report-row span:last-child {
-            font-weight: 600;
-            color: var(--text-color);
-            font-variant-numeric: tabular-nums;
-            display: flex;
-            align-items: center;
-        }
-
-        .divider {
-            border: none;
-            border-top: 1px solid var(--border);
-            margin: 15px 0;
-        }
-
-        .total-row span:first-child {
-            font-weight: 800;
-            text-transform: uppercase;
-            color: var(--text-color);
-        }
-
-        .total-price {
-            font-size: 28px;
-            font-weight: 800;
-        }
-
-        /* Скрытый инпут для чаевых */
         .tip-input {
-            background: transparent;
-            border: none;
-            color: var(--text-color);
-            font-size: 14px;
-            font-weight: 600;
-            text-align: right;
-            width: 60px;
-            font-family: inherit;
-            padding: 0;
-            margin: 0;
-            margin-right: 4px;
-            border-bottom: 1px dashed var(--muted);
-            border-radius: 0;
+            background: transparent; border: none; color: var(--text-color); font-size: 14px;
+            font-weight: 600; text-align: right; width: 60px; font-family: inherit; padding: 0; margin: 0;
+            margin-right: 4px; border-bottom: 1px dashed var(--muted); border-radius: 0;
         }
-
-        .tip-input:focus {
-            outline: none;
-            border-bottom: 1px solid var(--text-color);
-        }
-
-        .tip-input::placeholder {
-            color: var(--muted);
-        }
+        .tip-input:focus { outline: none; border-bottom: 1px solid var(--text-color); }
+        .tip-input::placeholder { color: var(--muted); }
 
         .save-btn {
-            width: 100%;
-            padding: 15px;
-            margin-top: 20px;
-            background-color: var(--text-color);
-            color: var(--bg-color);
-            border: none;
-            border-radius: 4px;
-            font-size: 14px;
-            font-weight: 800;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
+            width: 100%; padding: 15px; margin-top: 20px; background-color: var(--text-color); color: var(--bg-color);
+            border: none; border-radius: 4px; font-size: 14px; font-weight: 800; text-transform: uppercase; cursor: pointer; transition: 0.2s;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
         }
+        .save-btn:active { transform: scale(0.98); opacity: 0.8; }
+        .secondary-btn { background-color: var(--highlight); color: var(--muted); border: 1px solid var(--border); margin-top: 30px; font-size: 11px; }
 
-        .save-btn:active {
-            transform: scale(0.98);
-            opacity: 0.8;
-        }
-
-        .secondary-btn {
-            background-color: var(--highlight);
-            color: var(--muted);
-            border: 1px solid var(--border);
-            margin-top: 30px;
-            font-size: 11px;
-        }
-
-        .filters {
-            display: flex;
-            gap: 5px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
+        .filters { display: flex; gap: 5px; margin-bottom: 20px; flex-wrap: wrap; }
         .filter-btn {
-            flex: 1;
-            padding: 8px 2px;
-            background: transparent;
-            border: 1px solid var(--border);
-            color: var(--muted);
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-            border-radius: 4px;
-            transition: 0.2s;
-            cursor: pointer;
+            flex: 1; padding: 8px 2px; background: transparent; border: 1px solid var(--border);
+            color: var(--muted); font-size: 11px; font-weight: 600; text-transform: uppercase;
+            border-radius: 4px; transition: 0.2s; cursor: pointer;
         }
+        .filter-btn.active { background: var(--text-color); color: var(--bg-color); border-color: var(--text-color); }
 
-        .filter-btn.active {
-            background: var(--text-color);
-            color: var(--bg-color);
-            border-color: var(--text-color);
-        }
-
-        .date-inputs {
-            display: flex;
-            gap: 5px;
-            width: 100%;
-            margin-top: 5px;
-        }
-
+        .date-inputs { display: flex; gap: 5px; width: 100%; margin-top: 5px; }
         .date-inputs input {
-            flex: 1;
-            background: transparent;
-            border: 1px solid var(--border);
-            color: var(--text-color);
-            padding: 8px;
-            border-radius: 4px;
-            font-family: inherit;
-            font-size: 12px;
-            color-scheme: dark;
+            flex: 1; background: transparent; border: 1px solid var(--border); color: var(--text-color);
+            padding: 8px; border-radius: 4px; font-family: inherit; font-size: 12px; color-scheme: dark;
         }
 
-        .chart-container {
-            position: relative;
-            width: 100%;
-            margin-bottom: 20px;
-        }
+        .chart-container { position: relative; width: 100%; margin-bottom: 20px; }
+        .chart { width: 100%; height: 140px; border-bottom: 1px solid var(--border); overflow-x: auto; overflow-y: hidden; scrollbar-width: none; scroll-behavior: smooth; }
+        .chart::-webkit-scrollbar { display: none; }
+        .chart-node-hitbox { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 
-        .chart {
-            width: 100%;
-            height: 140px;
-            border-bottom: 1px solid var(--border);
-            overflow-x: auto;
-            overflow-y: hidden;
-            scrollbar-width: none;
-            scroll-behavior: smooth;
-        }
-
-        .chart::-webkit-scrollbar {
-            display: none;
-        }
-
-        .chart-node-hitbox {
-            cursor: pointer;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        .insights-block {
-            background-color: #0a0a0a;
-            border: 1px dashed var(--border);
-            border-radius: 4px;
-            padding: 15px;
-            margin-top: 15px;
-        }
-
-        .insight-row {
-            display: flex;
-            justify-content: space-between;
-            font-size: 12px;
-            color: var(--muted);
-            margin-bottom: 8px;
-        }
-
-        .insight-row span:last-child {
-            color: var(--accent);
-            font-weight: 700;
-            text-transform: uppercase;
-        }
+        .insights-block { background-color: #0a0a0a; border: 1px dashed var(--border); border-radius: 4px; padding: 15px; margin-top: 15px; }
+        .insight-row { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+        .insight-row span:last-child { color: var(--accent); font-weight: 700; text-transform: uppercase; }
 
         .chart-tooltip {
-            position: fixed;
-            background: rgba(28, 28, 30, 0.7);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: var(--text-color);
-            padding: 10px 14px;
-            border-radius: 8px;
-            font-size: 13px;
-            pointer-events: none;
-            opacity: 0;
-            transform: translate(-50%, 10px);
-            transition: opacity 0.2s, transform 0.2s;
-            z-index: 100;
-            text-align: center;
+            position: fixed; background: rgba(28, 28, 30, 0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1); color: var(--text-color); padding: 10px 14px; border-radius: 8px;
+            font-size: 13px; pointer-events: none; opacity: 0; transform: translate(-50%, 10px);
+            transition: opacity 0.2s, transform 0.2s; z-index: 100; text-align: center;
         }
+        .chart-tooltip.visible { opacity: 1; transform: translate(-50%, -15px); }
 
-        .chart-tooltip.visible {
-            opacity: 1;
-            transform: translate(-50%, -15px);
-        }
+        .manual-form { display: none; background: var(--highlight); border: 1px solid var(--border); padding: 15px; margin-top: 15px; border-radius: 4px; }
+        .manual-form input { width: 100%; background: #000; border: 1px solid var(--border); color: var(--text-color); padding: 12px; border-radius: 4px; margin-bottom: 10px; box-sizing: border-box; color-scheme: dark; }
 
-        .manual-form {
-            display: none;
-            background: var(--highlight);
-            border: 1px solid var(--border);
-            padding: 15px;
-            margin-top: 15px;
-            border-radius: 4px;
-        }
-
-        .manual-form input {
-            width: 100%;
-            background: #000;
-            border: 1px solid var(--border);
-            color: var(--text-color);
-            padding: 12px;
-            border-radius: 4px;
-            margin-bottom: 10px;
-            box-sizing: border-box;
-            color-scheme: dark;
-        }
-
-        .pager {
-            display: flex;
-            gap: 8px;
-            margin-top: 40px;
-            justify-content: center;
-            width: 100%;
-        }
-
-        .pager-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background-color: var(--border);
-            transition: 0.3s ease;
-        }
-
-        .pager-dot.active {
-            background-color: var(--text-color);
-            transform: scale(1.2);
-        }
+        .pager { display: flex; gap: 8px; margin-top: 40px; justify-content: center; width: 100%; }
+        .pager-dot { width: 8px; height: 8px; border-radius: 50%; background-color: var(--border); transition: 0.3s ease; }
+        .pager-dot.active { background-color: var(--text-color); transform: scale(1.2); }
 
         .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.85);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            animation: fadeIn 0.2s ease-out;
+            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            z-index: 1000; justify-content: center; align-items: center; padding: 20px; animation: fadeIn 0.2s ease-out;
         }
-
-        .settings-content {
-            background: var(--highlight);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            width: 100%;
-            max-width: 320px;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-
-        .settings-content h2 {
-            margin-top: 0;
-            font-size: 16px;
-            text-transform: uppercase;
-            color: var(--text-color);
-            letter-spacing: 1px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .cfg-group {
-            margin-bottom: 15px;
-        }
-
-        .cfg-label {
-            display: block;
-            font-size: 11px;
-            color: var(--muted);
-            text-transform: uppercase;
-            margin-bottom: 6px;
-            font-weight: 600;
-        }
-
-        .cfg-inputs {
-            display: flex;
-            gap: 10px;
-            width: 100%;
-        }
-
+        .settings-content { background: var(--highlight); border: 1px solid var(--border); border-radius: 8px; width: 100%; max-width: 320px; padding: 20px; box-sizing: border-box; }
+        .settings-content h2 { margin-top: 0; font-size: 16px; text-transform: uppercase; color: var(--text-color); letter-spacing: 1px; margin-bottom: 20px; text-align: center; }
+        .cfg-group { margin-bottom: 15px; }
+        .cfg-label { display: block; font-size: 11px; color: var(--muted); text-transform: uppercase; margin-bottom: 6px; font-weight: 600;}
+        .cfg-inputs { display: flex; gap: 10px; width: 100%; }
         .cfg-inputs input {
-            flex: 1;
-            min-width: 0;
-            width: 100%;
-            background: #000;
-            border: 1px solid var(--border);
-            color: var(--text-color);
-            padding: 10px;
-            border-radius: 4px;
-            text-align: center;
-            font-size: 14px;
-            font-weight: 600;
-            font-family: inherit;
-            box-sizing: border-box;
+            flex: 1; min-width: 0; width: 100%; background: #000; border: 1px solid var(--border); color: var(--text-color);
+            padding: 10px; border-radius: 4px; text-align: center; font-size: 14px; font-weight: 600; font-family: inherit; box-sizing: border-box;
         }
+
+        /* Мелкий шрифт для детализации дохода */
+        .breakdown-row { font-size: 12px; margin-top: -5px; }
+        .breakdown-row span:first-child { color: var(--muted); }
+        .breakdown-row span:last-child { color: #aaaaaa; }
+
     </style>
 </head>
-
 <body>
 
     <div id="tooltip" class="chart-tooltip">
@@ -577,10 +204,7 @@
                 </div>
             </div>
             <button id="cfg-save-btn" class="save-btn" style="margin-top: 10px; padding: 12px;" onclick="saveConfig()">
-                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="20 6 9 17 4 12"></polyline>
-                </svg>
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                 Сохранить
             </button>
             <button class="save-btn secondary-btn" style="margin-top: 10px; padding: 12px;" onclick="closeSettings()">
@@ -592,12 +216,9 @@
     <div class="header-container">
         <h1 class="app-title" id="main-title">Смена</h1>
         <button class="settings-btn" onclick="openSettings()">
-            <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"
-                stroke-linejoin="round">
+            <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="3"></circle>
-                <path
-                    d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
-                </path>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
             </svg>
         </button>
     </div>
@@ -609,27 +230,17 @@
 
     <div class="slider-viewport">
         <div class="slider-track" id="slider-track">
-
+            
             <div class="slider-page" id="page-0">
                 <div class="page-content">
                     <div class="pickers-wrapper" id="pickers-section">
                         <div class="picker-column">
                             <div class="picker-label">Кальяны</div>
-                            <div class="picker-container">
-                                <div class="picker" id="hookah-picker">
-                                    <div class="spacer"></div>
-                                    <div class="spacer"></div>
-                                </div>
-                            </div>
+                            <div class="picker-container"><div class="picker" id="hookah-picker"><div class="spacer"></div><div class="spacer"></div></div></div>
                         </div>
                         <div class="picker-column">
                             <div class="picker-label">Замены</div>
-                            <div class="picker-container">
-                                <div class="picker" id="replacement-picker">
-                                    <div class="spacer"></div>
-                                    <div class="spacer"></div>
-                                </div>
-                            </div>
+                            <div class="picker-container"><div class="picker" id="replacement-picker"><div class="spacer"></div><div class="spacer"></div></div></div>
                         </div>
                     </div>
 
@@ -637,20 +248,13 @@
                     <div class="report-row"><span>Процент (10%)</span><span id="bonus-price">0 ₸</span></div>
                     <div class="report-row">
                         <span>Чаевые</span>
-                        <span><input type="number" id="tips-input" class="tip-input" placeholder="0" inputmode="numeric"
-                                oninput="calc()"> ₸</span>
+                        <span><input type="number" id="tips-input" class="tip-input" placeholder="0" inputmode="numeric" oninput="calc()"> ₸</span>
                     </div>
 
                     <div class="divider"></div>
-                    <div class="report-row total-row"><span>Итого</span><span class="total-price" id="total-price">7 000
-                            ₸</span></div>
+                    <div class="report-row total-row"><span>Итого</span><span class="total-price" id="total-price">7 000 ₸</span></div>
                     <button class="save-btn" onclick="saveCurrentShift()">
-                        <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2"
-                            fill="none" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-                            <polyline points="17 21 17 13 7 13 7 21"></polyline>
-                            <polyline points="7 3 7 8 15 8"></polyline>
-                        </svg>
+                        <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
                         Сохранить смену
                     </button>
                 </div>
@@ -670,36 +274,30 @@
                         <input type="date" id="date-end" onchange="generateReport()">
                     </div>
 
-                    <div class="chart-container">
-                        <div class="chart" id="trend-chart" onscroll="hideTooltip()"></div>
-                    </div>
+                    <div class="chart-container"><div class="chart" id="trend-chart" onscroll="hideTooltip()"></div></div>
 
                     <div class="report-row"><span>Смен отработано</span><span id="stat-shifts">0</span></div>
                     <div class="report-row"><span>Сделано кальянов</span><span id="stat-hookahs">0</span></div>
-                    <div class="report-row"><span>Собрано чаевых</span><span id="stat-tips">0 ₸</span></div>
-
+                    
                     <div class="insights-block">
                         <div class="insight-row"><span>Средний чек:</span><span id="stat-avg">0 ₸</span></div>
                         <div class="insight-row"><span>Лучший день:</span><span id="stat-best-day">-</span></div>
                     </div>
+                    
                     <div class="divider"></div>
-                    <div class="report-row total-row"><span>Общий доход</span><span id="stat-total"
-                            style="font-size: 22px;">0 ₸</span></div>
-
+                    <div class="report-row total-row"><span>Общий доход</span><span id="stat-total" style="font-size: 22px;">0 ₸</span></div>
+                    <div class="report-row breakdown-row"><span>Без чаевых</span><span id="stat-total-no-tips">0 ₸</span></div>
+                    <div class="report-row breakdown-row" style="margin-top: 0;"><span>Только чаевые</span><span id="stat-total-tips">0 ₸</span></div>
+                    
                     <button class="save-btn secondary-btn" onclick="toggleManualForm()">
-                        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2"
-                            fill="none" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="12" y1="5" x2="12" y2="19"></line>
-                            <line x1="5" y1="12" x2="19" y2="12"></line>
-                        </svg>
+                        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                         Добавить прошлую смену
                     </button>
                     <div id="manual-form" class="manual-form">
                         <input type="date" id="manual-date">
                         <div style="display: flex; gap: 10px; margin-bottom: 10px;">
                             <input type="number" id="manual-hookahs" placeholder="Кальяны" style="margin-bottom: 0;">
-                            <input type="number" id="manual-replacements" placeholder="Замены"
-                                style="margin-bottom: 0;">
+                            <input type="number" id="manual-replacements" placeholder="Замены" style="margin-bottom: 0;">
                         </div>
                         <input type="number" id="manual-tips" placeholder="Чаевые (₸)">
                         <button class="save-btn" style="margin-top: 0;" onclick="saveManualShift()">Записать</button>
@@ -756,14 +354,14 @@
         window.saveConfig = async () => {
             const btn = document.getElementById('cfg-save-btn');
             btn.textContent = "Синхронизация...";
-
+            
             pricesConfig.wd_h = parseInt(document.getElementById('cfg-wd-h').value) || 4900;
             pricesConfig.wd_r = parseInt(document.getElementById('cfg-wd-r').value) || 4490;
             pricesConfig.we_h = parseInt(document.getElementById('cfg-we-h').value) || 7900;
             pricesConfig.we_r = parseInt(document.getElementById('cfg-we-r').value) || 5900;
-
+            
             localStorage.setItem('shift_prices_config', JSON.stringify(pricesConfig));
-
+            
             try {
                 await setDoc(doc(db, "settings", "prices"), pricesConfig);
                 btn.textContent = "Сохранено";
@@ -771,7 +369,7 @@
                 console.error("Ошибка сохранения настроек:", e);
                 btn.textContent = "Ошибка БД";
             }
-
+            
             setTimeout(() => {
                 btn.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Сохранить`;
                 closeSettings();
@@ -781,7 +379,7 @@
             calc();
         };
 
-        document.getElementById('settings-box').addEventListener('touchstart', e => e.stopPropagation(), { passive: true });
+        document.getElementById('settings-box').addEventListener('touchstart', e => e.stopPropagation(), {passive: true});
 
         // --- ЛОГИКА НАВИГАЦИИ ---
         let currentPage = 0;
@@ -799,18 +397,18 @@
         }
 
         let startX = 0, startY = 0, isDragging = false, ignoreSwipe = false;
-
-        document.addEventListener('mousedown', e => {
-            isDragging = true; startX = e.clientX; startY = e.clientY;
+        
+        document.addEventListener('mousedown', e => { 
+            isDragging = true; startX = e.clientX; startY = e.clientY; 
             ignoreSwipe = !!e.target.closest('.chart-container') || !!e.target.closest('.picker') || !!e.target.closest('input');
             if (!ignoreSwipe && !(e.target.classList && e.target.classList.contains('chart-node-hitbox'))) hideTooltip();
         });
-        document.addEventListener('mouseup', e => { if (isDragging && !ignoreSwipe) handleSwipe(e.clientX, e.clientY); isDragging = false; });
-        document.addEventListener('touchstart', e => {
-            startX = e.touches[0].clientX; startY = e.touches[0].clientY;
+        document.addEventListener('mouseup', e => { if(isDragging && !ignoreSwipe) handleSwipe(e.clientX, e.clientY); isDragging = false; });
+        document.addEventListener('touchstart', e => { 
+            startX = e.touches[0].clientX; startY = e.touches[0].clientY; 
             ignoreSwipe = !!e.target.closest('.chart-container') || !!e.target.closest('.picker') || !!e.target.closest('input');
             if (!ignoreSwipe && !(e.target.classList && e.target.classList.contains('chart-node-hitbox'))) hideTooltip();
-        }, { passive: true });
+        }, {passive: true});
         document.addEventListener('touchend', e => { if (!ignoreSwipe) handleSwipe(e.changedTouches[0].clientX, e.changedTouches[0].clientY); });
 
         function handleSwipe(endX, endY) {
@@ -835,28 +433,28 @@
 
                 const snap = await getDocs(collection(db, "shifts"));
                 snap.forEach(d => { shiftDataCache[d.id] = d.data(); });
-
+                
                 document.getElementById('db-status').textContent = "FIREBASE OK";
                 document.getElementById('db-status').style.color = "#4caf50";
-                if (currentPage === 1) generateReport();
-            } catch (e) {
+                if(currentPage === 1) generateReport();
+            } catch (e) { 
                 console.error(e);
-                document.getElementById('db-status').textContent = "ОШИБКА";
+                document.getElementById('db-status').textContent = "ОШИБКА"; 
             }
         }
 
-        window.saveCurrentShift = async function () {
+        window.saveCurrentShift = async function() {
             const btn = document.querySelector('.save-btn');
             const ogHtml = btn.innerHTML;
             btn.innerHTML = "СОХРАНЕНИЕ...";
             try {
                 const tipsVal = parseInt(document.getElementById('tips-input').value) || 0;
-                const obj = {
-                    total: finalSum,
-                    hookahs: hookahCount,
-                    replacements: replacementCount,
+                const obj = { 
+                    total: finalSum, 
+                    hookahs: hookahCount, 
+                    replacements: replacementCount, 
                     tips: tipsVal,
-                    timestamp: Date.now()
+                    timestamp: Date.now() 
                 };
                 await setDoc(doc(db, "shifts", shiftDateStr), obj);
                 shiftDataCache[shiftDateStr] = obj;
@@ -888,27 +486,27 @@
             if (items[idx]) {
                 items[idx].classList.add('active');
                 const val = parseInt(items[idx].dataset.value);
-                if (t === 'h') { if (lastHIdx !== idx && navigator.vibrate) navigator.vibrate(5); lastHIdx = idx; hookahCount = val; }
-                else { if (lastRIdx !== idx && navigator.vibrate) navigator.vibrate(5); lastRIdx = idx; replacementCount = val; }
+                if (t === 'h') { if(lastHIdx!==idx && navigator.vibrate) navigator.vibrate(5); lastHIdx=idx; hookahCount=val; }
+                else { if(lastRIdx!==idx && navigator.vibrate) navigator.vibrate(5); lastRIdx=idx; replacementCount=val; }
                 calc();
             }
         }
 
         function updatePricing() {
-            const n = new Date(); if (n.getHours() < 15) n.setDate(n.getDate() - 1);
+            const n = new Date(); if(n.getHours() < 15) n.setDate(n.getDate()-1);
             shiftDateStr = n.toISOString().split('T')[0];
-            const isW = [5, 6, 0].includes(n.getDay());
+            const isW = [5,6,0].includes(n.getDay());
             currentHookahPrice = isW ? pricesConfig.we_h : pricesConfig.wd_h;
             currentReplacementPrice = isW ? pricesConfig.we_r : pricesConfig.wd_r;
-            const ds = ["ВС", "ПН", "ВТ", "СР", "ЧТ", "ПТ", "СБ"];
-            document.getElementById('shift-status').textContent = `${shiftDateStr} | ${ds[n.getDay()]} | ${isW ? 'ВЫХОДНОЙ' : 'БУДНИЙ'} ТАРИФ`;
+            const ds = ["ВС","ПН","ВТ","СР","ЧТ","ПТ","СБ"];
+            document.getElementById('shift-status').textContent = `${shiftDateStr} | ${ds[n.getDay()]} | ${isW?'ВЫХОДНОЙ':'БУДНИЙ'} ТАРИФ`;
         }
 
-        window.calc = function () {
+        window.calc = function() {
             const tipsVal = parseInt(document.getElementById('tips-input').value) || 0;
-            const bonus = Math.round((hookahCount * currentHookahPrice + replacementCount * currentReplacementPrice) * 0.10);
+            const bonus = Math.round((hookahCount*currentHookahPrice + replacementCount*currentReplacementPrice)*0.10);
             finalSum = BASE_SALARY + bonus + tipsVal;
-
+            
             document.getElementById('bonus-price').textContent = fmt(bonus) + ' ₸';
             document.getElementById('total-price').textContent = fmt(finalSum) + ' ₸';
         }
@@ -918,70 +516,75 @@
             document.querySelectorAll('.filter-btn').forEach(x => x.classList.remove('active'));
             b.classList.add('active'); currentFilter = t;
             document.getElementById('custom-dates').style.display = t === 'custom' ? 'flex' : 'none';
-            if (t !== 'custom') generateReport();
+            if(t !== 'custom') generateReport();
         }
 
         window.generateReport = () => {
             const dates = Object.keys(shiftDataCache).sort();
-            let target = []; const today = new Date(); today.setHours(0, 0, 0, 0);
-            if (currentFilter === 'all') target = dates;
+            let target = []; const today = new Date(); today.setHours(0,0,0,0);
+            if(currentFilter === 'all') target = dates;
             else if (currentFilter === 'custom') {
                 const s = document.getElementById('date-start').value, e = document.getElementById('date-end').value;
-                if (!s || !e) return; target = dates.filter(d => d >= s && d <= e);
+                if(!s || !e) return; target = dates.filter(d => d >= s && d <= e);
             } else {
                 const back = parseInt(currentFilter);
-                for (let i = back - 1; i >= 0; i--) { const d = new Date(today); d.setDate(d.getDate() - i); target.push(d.toISOString().split('T')[0]); }
+                for(let i=back-1; i>=0; i--) { const d=new Date(today); d.setDate(d.getDate()-i); target.push(d.toISOString().split('T')[0]); }
             }
             render(target);
         }
 
         function render(dates) {
-            let total = 0, hookahs = 0, worked = 0, max = 1, tipsTotal = 0;
-            let dayTotals = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 }, dayCounts = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
+            let total=0, hookahs=0, worked=0, max=1, tipsTotal=0;
+            let dayTotals = {0:0,1:0,2:0,3:0,4:0,5:0,6:0}, dayCounts = {0:0,1:0,2:0,3:0,4:0,5:0,6:0};
             dates.forEach(d => {
-                if (shiftDataCache[d]) {
-                    worked++;
-                    total += shiftDataCache[d].total;
-                    hookahs += shiftDataCache[d].hookahs;
-                    tipsTotal += (shiftDataCache[d].tips || 0); // Учитываем чаевые, если их нет - 0
-
-                    if (shiftDataCache[d].total > max) max = shiftDataCache[d].total;
-                    const dn = new Date(d).getDay(); dayTotals[dn] += shiftDataCache[d].total; dayCounts[dn]++;
+                if(shiftDataCache[d]) {
+                    worked++; 
+                    total+=shiftDataCache[d].total; 
+                    hookahs+=shiftDataCache[d].hookahs;
+                    tipsTotal+=(shiftDataCache[d].tips || 0);
+                    
+                    if(shiftDataCache[d].total > max) max = shiftDataCache[d].total;
+                    const dn = new Date(d).getDay(); dayTotals[dn]+=shiftDataCache[d].total; dayCounts[dn]++;
                 }
             });
+            
             document.getElementById('stat-shifts').textContent = worked;
             document.getElementById('stat-hookahs').textContent = hookahs;
-            document.getElementById('stat-tips').textContent = fmt(tipsTotal) + ' ₸';
+            
+            // Обновляем разбивку доходов
             document.getElementById('stat-total').textContent = fmt(total) + ' ₸';
-            document.getElementById('stat-avg').textContent = worked ? fmt(Math.round(total / worked)) + ' ₸' : '0 ₸';
-
-            let best = -1, bVal = 0; for (let i = 0; i < 7; i++) { if (dayCounts[i] && dayTotals[i] / dayCounts[i] > bVal) { bVal = dayTotals[i] / dayCounts[i]; best = i; } }
-            const dns = ["Воскресенье", "Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"];
+            document.getElementById('stat-total-no-tips').textContent = fmt(total - tipsTotal) + ' ₸';
+            document.getElementById('stat-total-tips').textContent = fmt(tipsTotal) + ' ₸';
+            
+            document.getElementById('stat-avg').textContent = worked ? fmt(Math.round(total/worked)) + ' ₸' : '0 ₸';
+            
+            let best=-1, bVal=0; for(let i=0; i<7; i++) { if(dayCounts[i] && dayTotals[i]/dayCounts[i]>bVal){bVal=dayTotals[i]/dayCounts[i]; best=i;} }
+            const dns = ["Воскресенье","Понедельник","Вторник","Среда","Четверг","Пятница","Суббота"];
             document.getElementById('stat-best-day').textContent = best !== -1 ? dns[best] : '-';
 
             const chart = document.getElementById('trend-chart');
-            if (!dates.length) return chart.innerHTML = '';
-            const w = Math.max(chart.clientWidth, dates.length * 45), h = 140, pX = 25, pYT = 30, pYB = 30;
-            let pts = [], html = '';
+            if(!dates.length) return chart.innerHTML='';
+            const w = Math.max(chart.clientWidth, dates.length*45), h=140, pX=25, pYT=30, pYB=30;
+            let pts=[], html='';
             dates.forEach((d, i) => {
                 const val = shiftDataCache[d] ? shiftDataCache[d].total : 0;
-                const x = dates.length === 1 ? w / 2 : pX + (i * (w - 2 * pX) / (dates.length - 1));
-                const y = pYT + (h - pYT - pYB) - (val / max) * (h - pYT - pYB);
+                const x = dates.length===1 ? w/2 : pX+(i*(w-2*pX)/(dates.length-1));
+                const y = pYT + (h-pYT-pYB) - (val/max)*(h-pYT-pYB);
                 pts.push(`${x},${y}`);
-                const short = d.split('-')[2] + '.' + d.split('-')[1];
-                if (val === max && val > 0) {
+                const short = d.split('-')[2]+'.'+d.split('-')[1];
+                if(val===max && val>0) {
                     html += `<circle cx="${x}" cy="${y}" r="6" fill="black" stroke="var(--accent)" stroke-width="2" />`;
-                    html += `<text x="${x}" y="${y - 12}" fill="var(--accent)" font-size="9" font-weight="bold" text-anchor="middle">MAX</text>`;
+                    html += `<text x="${x}" y="${y-12}" fill="var(--accent)" font-size="9" font-weight="bold" text-anchor="middle">MAX</text>`;
                 } else { html += `<circle cx="${x}" cy="${y}" r="3" fill="black" stroke="white" stroke-width="2" />`; }
-                html += `<circle cx="${x}" cy="${y}" r="20" fill="transparent" class="chart-node-hitbox" onclick="showTooltip(event,'${d}',${val},${shiftDataCache[d] ? shiftDataCache[d].hookahs : 0},${shiftDataCache[d] ? shiftDataCache[d].replacements : 0})" />`;
-                html += `<text x="${x}" y="${h - 10}" fill="var(--muted)" font-size="10" text-anchor="middle">${short}</text>`;
+                html += `<circle cx="${x}" cy="${y}" r="20" fill="transparent" class="chart-node-hitbox" onclick="showTooltip(event,'${d}',${val},${shiftDataCache[d]?shiftDataCache[d].hookahs:0},${shiftDataCache[d]?shiftDataCache[d].replacements:0})" />`;
+                html += `<text x="${x}" y="${h-10}" fill="var(--muted)" font-size="10" text-anchor="middle">${short}</text>`;
             });
             chart.innerHTML = `<svg width="${w}" height="${h}"><polyline points="${pts.join(' ')}" fill="none" stroke="white" stroke-width="2" />${html}</svg>`;
             setTimeout(() => chart.scrollLeft = chart.scrollWidth, 50);
         }
 
         window.showTooltip = (e, d, t, h, r) => {
-            e.stopPropagation();
+            e.stopPropagation(); 
             const tt = document.getElementById('tooltip');
             document.getElementById('tt-date').textContent = d;
             document.getElementById('tt-total').textContent = fmt(t) + ' ₸';
@@ -995,7 +598,7 @@
             glow.setAttribute('class', 'active-node'); glow.style.pointerEvents = 'none';
             chartArea.appendChild(glow);
             const rct = target.getBoundingClientRect();
-            tt.style.left = rct.left + rct.width / 2 + 'px'; tt.style.top = rct.top + 'px';
+            tt.style.left = rct.left + rct.width/2 + 'px'; tt.style.top = rct.top + 'px';
             tt.classList.add('visible');
         }
 
@@ -1004,25 +607,25 @@
             document.querySelectorAll('.active-node').forEach(el => el.remove());
         };
 
-        window.toggleManualForm = () => { const f = document.getElementById('manual-form'); f.style.display = f.style.display === 'block' ? 'none' : 'block'; }
+        window.toggleManualForm = () => { const f=document.getElementById('manual-form'); f.style.display = f.style.display==='block'?'none':'block'; }
         window.saveManualShift = async () => {
             const d = document.getElementById('manual-date').value;
-            const h = parseInt(document.getElementById('manual-hookahs').value) || 0;
-            const r = parseInt(document.getElementById('manual-replacements').value) || 0;
-            const tips = parseInt(document.getElementById('manual-tips').value) || 0;
-
-            if (!d) return;
-            const isW = [5, 6, 0].includes(new Date(d).getDay());
+            const h = parseInt(document.getElementById('manual-hookahs').value)||0;
+            const r = parseInt(document.getElementById('manual-replacements').value)||0;
+            const tips = parseInt(document.getElementById('manual-tips').value)||0;
+            
+            if(!d) return;
+            const isW = [5,6,0].includes(new Date(d).getDay());
             const hPrice = isW ? pricesConfig.we_h : pricesConfig.wd_h;
             const rPrice = isW ? pricesConfig.we_r : pricesConfig.wd_r;
-
-            const total = BASE_SALARY + Math.round((h * hPrice + r * rPrice) * 0.10) + tips;
-
-            const obj = { total, hookahs: h, replacements: r, tips, timestamp: Date.now() };
+            
+            const total = BASE_SALARY + Math.round((h*hPrice + r*rPrice)*0.10) + tips;
+            
+            const obj = {total, hookahs:h, replacements:r, tips, timestamp: Date.now()};
             await setDoc(doc(db, "shifts", d), obj);
             shiftDataCache[d] = obj;
             generateReport(); toggleManualForm();
-
+            
             document.getElementById('manual-date').value = '';
             document.getElementById('manual-hookahs').value = '';
             document.getElementById('manual-replacements').value = '';
@@ -1032,5 +635,4 @@
         initPickers(); updatePricing(); fetchData();
     </script>
 </body>
-
 </html>
