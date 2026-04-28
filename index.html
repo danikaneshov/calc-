@@ -20,6 +20,7 @@
             --muted: #666666;
             --border: #222222;
             --accent: #ff9800; 
+            --bar-color: #2196f3; /* Цвет для кассы бара */
         }
 
         body {
@@ -28,22 +29,13 @@
             color: var(--text-color);
             margin: 0;
             padding: env(safe-area-inset-top) 0 60px 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            box-sizing: border-box;
-            letter-spacing: -0.5px;
-            overflow-x: hidden;
-            -webkit-user-select: none;
-            user-select: none;
+            display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh; box-sizing: border-box; letter-spacing: -0.5px;
+            overflow-x: hidden; -webkit-user-select: none; user-select: none;
             touch-action: manipulation;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.98); }
-            to { opacity: 1; transform: scale(1); }
-        }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
 
         .header-container {
             display: flex; justify-content: space-between; align-items: center;
@@ -67,9 +59,10 @@
 
         #db-status { color: var(--accent); }
 
+        /* Слайдер на 3 экрана (300% ширины) */
         .slider-viewport { width: 100%; flex: 1; overflow: hidden; position: relative; }
-        .slider-track { display: flex; width: 200%; height: 100%; transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1); will-change: transform; align-items: flex-start; }
-        .slider-page { width: 50%; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; padding: 0 20px; box-sizing: border-box; }
+        .slider-track { display: flex; width: 300%; height: 100%; transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1); will-change: transform; align-items: flex-start; }
+        .slider-page { width: 33.333333%; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; padding: 0 20px; box-sizing: border-box; }
         .page-content { width: 100%; max-width: 400px; display: flex; flex-direction: column; }
 
         .pickers-wrapper { display: flex; gap: 10px; width: 100%; margin-bottom: 30px; }
@@ -84,16 +77,10 @@
             background-color: rgba(255, 255, 255, 0.03); border-top: 1px solid rgba(255,255,255,0.1);
             border-bottom: 1px solid rgba(255,255,255,0.1); pointer-events: none; z-index: 2;
         }
-        .picker {
-            height: 100%; overflow-y: scroll; scroll-snap-type: y mandatory;
-            scrollbar-width: none; -ms-overflow-style: none; position: relative; z-index: 1; scroll-behavior: smooth;
-        }
+        .picker { height: 100%; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; -ms-overflow-style: none; position: relative; z-index: 1; scroll-behavior: smooth; }
         .picker::-webkit-scrollbar { display: none; }
         .spacer { height: 40px; }
-        .picker-item {
-            height: 40px; line-height: 40px; text-align: center; font-size: 18px; font-weight: 600;
-            scroll-snap-align: center; color: #333; transition: all 0.2s ease; cursor: pointer;
-        }
+        .picker-item { height: 40px; line-height: 40px; text-align: center; font-size: 18px; font-weight: 600; scroll-snap-align: center; color: #333; transition: all 0.2s ease; cursor: pointer; }
         .picker-item.active { color: var(--text-color); font-size: 24px; }
 
         .report-row { display: flex; justify-content: space-between; align-items: flex-end; padding: 8px 0; font-size: 14px; color: var(--muted); }
@@ -145,12 +132,20 @@
             position: fixed; background: rgba(28, 28, 30, 0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.1); color: var(--text-color); padding: 10px 14px; border-radius: 8px;
             font-size: 13px; pointer-events: none; opacity: 0; transform: translate(-50%, 10px);
-            transition: opacity 0.2s, transform 0.2s; z-index: 100; text-align: center;
+            transition: opacity 0.2s, transform 0.2s; z-index: 100; text-align: center; white-space: nowrap;
         }
         .chart-tooltip.visible { opacity: 1; transform: translate(-50%, -15px); }
 
         .manual-form { display: none; background: var(--highlight); border: 1px solid var(--border); padding: 15px; margin-top: 15px; border-radius: 4px; }
         .manual-form input { width: 100%; background: #000; border: 1px solid var(--border); color: var(--text-color); padding: 12px; border-radius: 4px; margin-bottom: 10px; box-sizing: border-box; color-scheme: dark; }
+
+        /* Массовый ввод смен бара */
+        .bulk-textarea {
+            width: 100%; background: #000; border: 1px dashed var(--border); color: var(--text-color);
+            padding: 12px; border-radius: 4px; box-sizing: border-box; font-family: monospace; font-size: 12px;
+            resize: none; margin-top: 15px; margin-bottom: 10px; outline: none;
+        }
+        .bulk-textarea:focus { border-color: var(--bar-color); }
 
         .pager { display: flex; gap: 8px; margin-top: 40px; justify-content: center; width: 100%; }
         .pager-dot { width: 8px; height: 8px; border-radius: 50%; background-color: var(--border); transition: 0.3s ease; }
@@ -170,11 +165,11 @@
             flex: 1; min-width: 0; width: 100%; background: #000; border: 1px solid var(--border); color: var(--text-color);
             padding: 10px; border-radius: 4px; text-align: center; font-size: 14px; font-weight: 600; font-family: inherit; box-sizing: border-box;
         }
-
         .breakdown-row { font-size: 12px; margin-top: -5px; }
         .breakdown-row span:first-child { color: var(--muted); }
         .breakdown-row span:last-child { color: #aaaaaa; }
 
+        .bar-color-text { color: var(--bar-color) !important; }
     </style>
 </head>
 <body>
@@ -262,13 +257,13 @@
             <div class="slider-page" id="page-1">
                 <div class="page-content">
                     <div class="filters">
-                        <button class="filter-btn active" onclick="setFilter('3', this)">3 дня</button>
-                        <button class="filter-btn" onclick="setFilter('7', this)">Неделя</button>
-                        <button class="filter-btn" onclick="setFilter('30', this)">Месяц</button>
-                        <button class="filter-btn" onclick="setFilter('all', this)">Все</button>
-                        <button class="filter-btn" onclick="setFilter('custom', this)">Период</button>
+                        <button class="filter-btn active" data-filter="3" onclick="setFilter('3')">3 дня</button>
+                        <button class="filter-btn" data-filter="7" onclick="setFilter('7')">Неделя</button>
+                        <button class="filter-btn" data-filter="30" onclick="setFilter('30')">Месяц</button>
+                        <button class="filter-btn" data-filter="all" onclick="setFilter('all')">Все</button>
+                        <button class="filter-btn" data-filter="custom" onclick="setFilter('custom')">Период</button>
                     </div>
-                    <div class="date-inputs" id="custom-dates" style="display: none;">
+                    <div class="date-inputs custom-dates" style="display: none;">
                         <input type="date" id="date-start" onchange="generateReport()">
                         <input type="date" id="date-end" onchange="generateReport()">
                     </div>
@@ -304,12 +299,41 @@
                 </div>
             </div>
 
+            <div class="slider-page" id="page-2">
+                <div class="page-content">
+                    <div class="filters">
+                        <button class="filter-btn active" data-filter="3" onclick="setFilter('3')">3 дня</button>
+                        <button class="filter-btn" data-filter="7" onclick="setFilter('7')">Неделя</button>
+                        <button class="filter-btn" data-filter="30" onclick="setFilter('30')">Месяц</button>
+                        <button class="filter-btn" data-filter="all" onclick="setFilter('all')">Все</button>
+                        <button class="filter-btn" data-filter="custom" onclick="setFilter('custom')">Период</button>
+                    </div>
+                    <div class="date-inputs custom-dates" style="display: none;">
+                        </div>
+
+                    <div class="chart-container"><div class="chart" id="bar-trend-chart" onscroll="hideTooltip()"></div></div>
+
+                    <div class="report-row"><span>Всего кальянов (Бар)</span><span class="bar-color-text" id="bar-stat-hookahs">0</span></div>
+                    <div class="report-row"><span>Всего замен (Бар)</span><span class="bar-color-text" id="bar-stat-replacements">0</span></div>
+                    
+                    <div class="divider"></div>
+                    <div class="report-row total-row"><span>Касса бара</span><span id="bar-stat-total" style="font-size: 22px; color: var(--bar-color);">0 ₸</span></div>
+                    
+                    <textarea id="bulk-bar-input" class="bulk-textarea" rows="4" placeholder="Загрузить смены списком:&#10;28.04.2026 - 15 - 4&#10;29.04.2026 - 12 - 2"></textarea>
+                    <button id="bulk-save-btn" class="save-btn" style="margin-top: 0; padding: 12px; background: var(--bar-color);" onclick="saveBulkBarShifts()">
+                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                        Загрузить стату
+                    </button>
+                </div>
+            </div>
+
         </div>
     </div>
 
     <div class="pager">
         <div class="pager-dot active" id="dot-0"></div>
         <div class="pager-dot" id="dot-1"></div>
+        <div class="pager-dot" id="dot-2"></div>
     </div>
 
 
@@ -331,67 +355,55 @@
 
         const MAX_VALUE = 25, REPEATS = 60, ITEM_HEIGHT = 40, BASE_SALARY = 7000;
         let hookahCount = 0, replacementCount = 0, currentHookahPrice = 0, currentReplacementPrice = 0, finalSum = 0, shiftDateStr = "";
-        let currentFilter = '3', shiftDataCache = {}, lastHIdx = -1, lastRIdx = -1;
+        let currentFilter = '3', shiftDataCache = {}, barDataCache = {}, lastHIdx = -1, lastRIdx = -1;
 
         const fmt = (num) => num.toLocaleString('ru-RU');
 
         // --- КОНФИГ ЦЕН ---
-        let pricesConfig = JSON.parse(localStorage.getItem('shift_prices_config')) || {
-            wd_h: 4900, wd_r: 4490, we_h: 7900, we_r: 5900
-        };
+        let pricesConfig = JSON.parse(localStorage.getItem('shift_prices_config')) || { wd_h: 4900, wd_r: 4490, we_h: 7900, we_r: 5900 };
 
         window.openSettings = () => {
-            document.getElementById('cfg-wd-h').value = pricesConfig.wd_h;
-            document.getElementById('cfg-wd-r').value = pricesConfig.wd_r;
-            document.getElementById('cfg-we-h').value = pricesConfig.we_h;
-            document.getElementById('cfg-we-r').value = pricesConfig.we_r;
+            document.getElementById('cfg-wd-h').value = pricesConfig.wd_h; document.getElementById('cfg-wd-r').value = pricesConfig.wd_r;
+            document.getElementById('cfg-we-h').value = pricesConfig.we_h; document.getElementById('cfg-we-r').value = pricesConfig.we_r;
             document.getElementById('settings-modal').style.display = 'flex';
         };
 
         window.closeSettings = () => document.getElementById('settings-modal').style.display = 'none';
 
         window.saveConfig = async () => {
-            const btn = document.getElementById('cfg-save-btn');
-            btn.textContent = "Синхронизация...";
-            
+            const btn = document.getElementById('cfg-save-btn'); btn.textContent = "Синхронизация...";
             pricesConfig.wd_h = parseInt(document.getElementById('cfg-wd-h').value) || 4900;
             pricesConfig.wd_r = parseInt(document.getElementById('cfg-wd-r').value) || 4490;
             pricesConfig.we_h = parseInt(document.getElementById('cfg-we-h').value) || 7900;
             pricesConfig.we_r = parseInt(document.getElementById('cfg-we-r').value) || 5900;
-            
             localStorage.setItem('shift_prices_config', JSON.stringify(pricesConfig));
-            
-            try {
-                await setDoc(doc(db, "settings", "prices"), pricesConfig);
-                btn.textContent = "Сохранено";
-            } catch (e) {
-                console.error("Ошибка сохранения настроек:", e);
-                btn.textContent = "Ошибка БД";
-            }
-            
+            try { await setDoc(doc(db, "settings", "prices"), pricesConfig); btn.textContent = "Сохранено"; } 
+            catch (e) { btn.textContent = "Ошибка БД"; }
             setTimeout(() => {
                 btn.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Сохранить`;
                 closeSettings();
             }, 1000);
-
-            updatePricing();
-            calc();
+            updatePricing(); calc(); if(currentPage > 0) generateReport();
         };
 
         document.getElementById('settings-box').addEventListener('touchstart', e => e.stopPropagation(), {passive: true});
 
-        // --- ЛОГИКА НАВИГАЦИИ ---
+        // --- ЛОГИКА НАВИГАЦИИ (3 ЭКРАНА) ---
         let currentPage = 0;
         const sliderTrack = document.getElementById('slider-track');
 
         function switchPage(pageIndex) {
             currentPage = pageIndex;
-            sliderTrack.style.transform = `translateX(-${pageIndex * 50}%)`;
-            const title = document.getElementById('main-title');
-            title.textContent = (pageIndex === 0) ? 'Смена' : 'Аналитика';
+            sliderTrack.style.transform = `translateX(-${pageIndex * 33.333333}%)`;
+            
+            const titles = ['Смена', 'Моя Аналитика', 'Общая Стата'];
+            document.getElementById('main-title').textContent = titles[pageIndex];
+
             document.getElementById('dot-0').classList.toggle('active', pageIndex === 0);
             document.getElementById('dot-1').classList.toggle('active', pageIndex === 1);
-            if (pageIndex === 1) generateReport();
+            document.getElementById('dot-2').classList.toggle('active', pageIndex === 2);
+            
+            if (pageIndex > 0) generateReport();
             hideTooltip();
         }
 
@@ -399,13 +411,13 @@
         
         document.addEventListener('mousedown', e => { 
             isDragging = true; startX = e.clientX; startY = e.clientY; 
-            ignoreSwipe = !!e.target.closest('.chart-container') || !!e.target.closest('.picker') || !!e.target.closest('input');
+            ignoreSwipe = !!e.target.closest('.chart-container') || !!e.target.closest('.picker') || !!e.target.closest('input') || !!e.target.closest('textarea');
             if (!ignoreSwipe && !(e.target.classList && e.target.classList.contains('chart-node-hitbox'))) hideTooltip();
         });
         document.addEventListener('mouseup', e => { if(isDragging && !ignoreSwipe) handleSwipe(e.clientX, e.clientY); isDragging = false; });
         document.addEventListener('touchstart', e => { 
             startX = e.touches[0].clientX; startY = e.touches[0].clientY; 
-            ignoreSwipe = !!e.target.closest('.chart-container') || !!e.target.closest('.picker') || !!e.target.closest('input');
+            ignoreSwipe = !!e.target.closest('.chart-container') || !!e.target.closest('.picker') || !!e.target.closest('input') || !!e.target.closest('textarea');
             if (!ignoreSwipe && !(e.target.classList && e.target.classList.contains('chart-node-hitbox'))) hideTooltip();
         }, {passive: true});
         document.addEventListener('touchend', e => { if (!ignoreSwipe) handleSwipe(e.changedTouches[0].clientX, e.changedTouches[0].clientY); });
@@ -414,32 +426,33 @@
             if (document.getElementById('settings-modal').style.display === 'flex') return;
             const dX = endX - startX;
             if (Math.abs(dX) > 50 && Math.abs(dX) > Math.abs(endY - startY)) {
-                if (dX > 0 && currentPage > 0) switchPage(0);
-                else if (dX < 0 && currentPage < 1) switchPage(1);
+                if (dX > 0 && currentPage > 0) switchPage(currentPage - 1);
+                else if (dX < 0 && currentPage < 2) switchPage(currentPage + 1);
             }
         }
 
-        // --- Firebase ---
+        // --- Firebase (Мои + Бар) ---
         async function fetchData() {
             try {
                 const configSnap = await getDoc(doc(db, "settings", "prices"));
                 if (configSnap.exists()) {
                     pricesConfig = configSnap.data();
                     localStorage.setItem('shift_prices_config', JSON.stringify(pricesConfig));
-                    updatePricing();
-                    calc();
+                    updatePricing(); calc();
                 }
 
+                // Качаем личные смены
                 const snap = await getDocs(collection(db, "shifts"));
                 snap.forEach(d => { shiftDataCache[d.id] = d.data(); });
                 
+                // Качаем общие смены бара
+                const barSnap = await getDocs(collection(db, "bar_shifts"));
+                barSnap.forEach(d => { barDataCache[d.id] = d.data(); });
+
                 document.getElementById('db-status').textContent = "FIREBASE OK";
                 document.getElementById('db-status').style.color = "#4caf50";
-                if(currentPage === 1) generateReport();
-            } catch (e) { 
-                console.error(e);
-                document.getElementById('db-status').textContent = "ОШИБКА"; 
-            }
+                if(currentPage > 0) generateReport();
+            } catch (e) { document.getElementById('db-status').textContent = "ОШИБКА"; }
         }
 
         window.saveCurrentShift = async function() {
@@ -448,18 +461,51 @@
             btn.innerHTML = "СОХРАНЕНИЕ...";
             try {
                 const tipsVal = parseInt(document.getElementById('tips-input').value) || 0;
-                const obj = { 
-                    total: finalSum, 
-                    hookahs: hookahCount, 
-                    replacements: replacementCount, 
-                    tips: tipsVal,
-                    timestamp: Date.now() 
-                };
+                const obj = { total: finalSum, hookahs: hookahCount, replacements: replacementCount, tips: tipsVal, timestamp: Date.now() };
                 await setDoc(doc(db, "shifts", shiftDateStr), obj);
                 shiftDataCache[shiftDateStr] = obj;
                 btn.innerHTML = "СОХРАНЕНО";
             } catch (e) { btn.innerHTML = "ОШИБКА"; }
             setTimeout(() => btn.innerHTML = ogHtml, 2000);
+        };
+
+        // --- Парсер массового ввода (Общая стата) ---
+        window.saveBulkBarShifts = async () => {
+            const text = document.getElementById('bulk-bar-input').value;
+            const lines = text.split('\n');
+            const batchArr = [];
+            
+            for (let line of lines) {
+                line = line.trim();
+                if(!line) continue;
+                // Формат: ДД.ММ.ГГГГ - 1 - 2 (допускает точки, слэши, запятые и тире как разделители)
+                const match = line.match(/(\d{1,2})[\.\/,-](\d{1,2})[\.\/,-](\d{2,4})\s*-\s*(\d+)\s*-\s*(\d+)/);
+                if(match) {
+                    let [_, d, m, y, h, r] = match;
+                    if(y.length === 2) y = "20" + y;
+                    const dateStr = `${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;
+                    batchArr.push({ date: dateStr, h: parseInt(h), r: parseInt(r) });
+                }
+            }
+            
+            if(batchArr.length > 0) {
+                const btn = document.getElementById('bulk-save-btn');
+                btn.textContent = "Сохранение...";
+                try {
+                    for(let item of batchArr) {
+                        await setDoc(doc(db, "bar_shifts", item.date), { hookahs: item.h, replacements: item.r, timestamp: Date.now() });
+                        barDataCache[item.date] = { hookahs: item.h, replacements: item.r };
+                    }
+                    btn.textContent = "Готово!";
+                    document.getElementById('bulk-bar-input').value = '';
+                    if(currentPage > 0) generateReport();
+                } catch(e) { btn.textContent = "Ошибка БД"; }
+                setTimeout(() => {
+                    btn.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg> Загрузить стату`;
+                }, 2000);
+            } else {
+                alert("Формат строк не распознан. Используй: ДД.ММ.ГГГГ - Кальяны - Замены");
+            }
         };
 
         // --- Калькулятор ---
@@ -505,21 +551,24 @@
             const tipsVal = parseInt(document.getElementById('tips-input').value) || 0;
             const bonus = Math.round((hookahCount*currentHookahPrice + replacementCount*currentReplacementPrice)*0.10);
             finalSum = BASE_SALARY + bonus + tipsVal;
-            
             document.getElementById('bonus-price').textContent = fmt(bonus) + ' ₸';
             document.getElementById('total-price').textContent = fmt(finalSum) + ' ₸';
         }
 
         // --- Аналитика ---
-        window.setFilter = (t, b) => {
+        window.setFilter = (t) => {
             document.querySelectorAll('.filter-btn').forEach(x => x.classList.remove('active'));
-            b.classList.add('active'); currentFilter = t;
-            document.getElementById('custom-dates').style.display = t === 'custom' ? 'flex' : 'none';
+            document.querySelectorAll(`.filter-btn[data-filter="${t}"]`).forEach(x => x.classList.add('active'));
+            currentFilter = t;
+            document.querySelectorAll('.custom-dates').forEach(el => el.style.display = t === 'custom' ? 'flex' : 'none');
             if(t !== 'custom') generateReport();
         }
 
         window.generateReport = () => {
-            const dates = Object.keys(shiftDataCache).sort();
+            // Собираем все уникальные даты из личных смен и смен бара
+            const allDatesSet = new Set([...Object.keys(shiftDataCache), ...Object.keys(barDataCache)]);
+            const dates = Array.from(allDatesSet).sort();
+            
             let target = []; const today = new Date(); today.setHours(0,0,0,0);
             if(currentFilter === 'all') target = dates;
             else if (currentFilter === 'custom') {
@@ -533,60 +582,119 @@
         }
 
         function render(dates) {
-            let total=0, hookahs=0, worked=0, max=1, tipsTotal=0;
-            let bestDateStr = '-';
-            let bestDateMax = 0;
+            // Личная стата
+            let total=0, hookahs=0, worked=0, max=1, tipsTotal=0, bestDateStr='-', bestDateMax=0;
+            
+            // Общая стата бара
+            let barTotalKassa=0, barTotalH=0, barTotalR=0, maxBar=1;
+
+            const chart = document.getElementById('trend-chart');
+            const chartBar = document.getElementById('bar-trend-chart');
+            const w = Math.max(chart.clientWidth || 360, dates.length*45), hSvg=140, pX=25, pYT=30, pYB=30;
+            let pts=[], ptsBarLine=[], ptsBarPersLine=[], html='', htmlBar='';
 
             dates.forEach(d => {
+                // 1. Считаем личную
                 if(shiftDataCache[d]) {
-                    worked++; 
-                    total+=shiftDataCache[d].total; 
-                    hookahs+=shiftDataCache[d].hookahs;
+                    worked++; total+=shiftDataCache[d].total; hookahs+=shiftDataCache[d].hookahs;
                     tipsTotal+=(shiftDataCache[d].tips || 0);
-                    
                     if(shiftDataCache[d].total > max) max = shiftDataCache[d].total;
+                    if(shiftDataCache[d].total > bestDateMax) { bestDateMax = shiftDataCache[d].total; bestDateStr = d; }
+                }
 
-                    if(shiftDataCache[d].total > bestDateMax) {
-                        bestDateMax = shiftDataCache[d].total;
-                        bestDateStr = d;
-                    }
+                // 2. Считаем Бар (Если нет общей, но есть личная - берем личную за основу)
+                const pData = shiftDataCache[d] || null;
+                const bData = barDataCache[d] || null;
+                
+                let dayBarH = bData ? bData.hookahs : (pData ? pData.hookahs : 0);
+                let dayBarR = bData ? bData.replacements : (pData ? pData.replacements : 0);
+                
+                const isW = [5,6,0].includes(new Date(d).getDay());
+                const pH = isW ? pricesConfig.we_h : pricesConfig.wd_h;
+                const pR = isW ? pricesConfig.we_r : pricesConfig.wd_r;
+                
+                const dayBarKassa = (dayBarH * pH) + (dayBarR * pR);
+                
+                if (dayBarH > 0 || dayBarR > 0) {
+                    barTotalH += dayBarH;
+                    barTotalR += dayBarR;
+                    barTotalKassa += dayBarKassa;
+                    if(dayBarKassa > maxBar) maxBar = dayBarKassa;
                 }
             });
             
+            // Обновление цифр ЭКРАНА 1 (Личная)
             document.getElementById('stat-shifts').textContent = worked;
             document.getElementById('stat-hookahs').textContent = hookahs;
-            
             document.getElementById('stat-total').textContent = fmt(total) + ' ₸';
             document.getElementById('stat-total-no-tips').textContent = fmt(total - tipsTotal) + ' ₸';
             document.getElementById('stat-total-tips').textContent = fmt(tipsTotal) + ' ₸';
-            
             document.getElementById('stat-avg').textContent = worked ? fmt(Math.round(total/worked)) + ' ₸' : '0 ₸';
-            
-            if (bestDateStr !== '-') {
-                const dateObj = new Date(bestDateStr);
-                bestDateStr = dateObj.toLocaleDateString('ru-RU');
-            }
-            document.getElementById('stat-best-day').textContent = bestDateStr;
+            document.getElementById('stat-best-day').textContent = bestDateStr !== '-' ? new Date(bestDateStr).toLocaleDateString('ru-RU') : '-';
 
-            const chart = document.getElementById('trend-chart');
-            if(!dates.length) return chart.innerHTML='';
-            const w = Math.max(chart.clientWidth, dates.length*45), h=140, pX=25, pYT=30, pYB=30;
-            let pts=[], html='';
+            // Обновление цифр ЭКРАНА 2 (Бар)
+            document.getElementById('bar-stat-hookahs').textContent = barTotalH;
+            document.getElementById('bar-stat-replacements').textContent = barTotalR;
+            document.getElementById('bar-stat-total').textContent = fmt(barTotalKassa) + ' ₸';
+
+            if(!dates.length) { chart.innerHTML=''; chartBar.innerHTML=''; return; }
+            
+            // РЕНДЕР ГРАФИКОВ
             dates.forEach((d, i) => {
-                const val = shiftDataCache[d] ? shiftDataCache[d].total : 0;
+                const isW = [5,6,0].includes(new Date(d).getDay());
+                const pH = isW ? pricesConfig.we_h : pricesConfig.wd_h;
+                const pR = isW ? pricesConfig.we_r : pricesConfig.wd_r;
+
+                const pData = shiftDataCache[d] || null;
+                const bData = barDataCache[d] || null;
+                
+                // Личные данные точки
+                const valP = pData ? pData.total : 0;
+                
+                // Данные бара для точки
+                let dayBarH = bData ? bData.hookahs : (pData ? pData.hookahs : 0);
+                let dayBarR = bData ? bData.replacements : (pData ? pData.replacements : 0);
+                const valB = (dayBarH * pH) + (dayBarR * pR);
+
                 const x = dates.length===1 ? w/2 : pX+(i*(w-2*pX)/(dates.length-1));
-                const y = pYT + (h-pYT-pYB) - (val/max)*(h-pYT-pYB);
-                pts.push(`${x},${y}`);
+                
+                // Y для личного графика
+                const yP = pYT + (hSvg-pYT-pYB) - (valP/max)*(hSvg-pYT-pYB);
+                pts.push(`${x},${yP}`);
+
+                // Y для графика Бара (масштаб по maxBar)
+                const yBar = pYT + (hSvg-pYT-pYB) - (valB/maxBar)*(hSvg-pYT-pYB);
+                const yBarPers = pYT + (hSvg-pYT-pYB) - (valP/maxBar)*(hSvg-pYT-pYB);
+                ptsBarLine.push(`${x},${yBar}`);
+                ptsBarPersLine.push(`${x},${yBarPers}`);
+
                 const short = d.split('-')[2]+'.'+d.split('-')[1];
-                if(val===max && val>0) {
-                    html += `<circle cx="${x}" cy="${y}" r="6" fill="black" stroke="var(--accent)" stroke-width="2" />`;
-                    html += `<text x="${x}" y="${y-12}" fill="var(--accent)" font-size="9" font-weight="bold" text-anchor="middle">MAX</text>`;
-                } else { html += `<circle cx="${x}" cy="${y}" r="3" fill="black" stroke="white" stroke-width="2" />`; }
-                html += `<circle cx="${x}" cy="${y}" r="20" fill="transparent" class="chart-node-hitbox" onclick="showTooltip(event,'${d}',${val},${shiftDataCache[d]?shiftDataCache[d].hookahs:0},${shiftDataCache[d]?shiftDataCache[d].replacements:0})" />`;
-                html += `<text x="${x}" y="${h-10}" fill="var(--muted)" font-size="10" text-anchor="middle">${short}</text>`;
+
+                // Точки для личного
+                if(valP===max && valP>0) {
+                    html += `<circle cx="${x}" cy="${yP}" r="6" fill="black" stroke="var(--accent)" stroke-width="2" />`;
+                    html += `<text x="${x}" y="${yP-12}" fill="var(--accent)" font-size="9" font-weight="bold" text-anchor="middle">MAX</text>`;
+                } else { html += `<circle cx="${x}" cy="${yP}" r="3" fill="black" stroke="white" stroke-width="2" />`; }
+                html += `<circle cx="${x}" cy="${yP}" r="20" fill="transparent" class="chart-node-hitbox" onclick="showTooltip(event,'${d}',${valP},${pData?pData.hookahs:0},${pData?pData.replacements:0})" />`;
+                html += `<text x="${x}" y="${hSvg-10}" fill="var(--muted)" font-size="10" text-anchor="middle">${short}</text>`;
+
+                // Точки для Бара
+                htmlBar += `<circle cx="${x}" cy="${yBar}" r="3" fill="black" stroke="var(--bar-color)" stroke-width="2" />`;
+                htmlBar += `<circle cx="${x}" cy="${yBarPers}" r="3" fill="black" stroke="white" stroke-width="2" />`;
+                // Специальный тултип для двойного графика
+                htmlBar += `<circle cx="${x}" cy="${yBar}" r="25" fill="transparent" class="chart-node-hitbox" onclick="showBarTooltip(event,'${d}',${valB},${valP},${dayBarH},${dayBarR})" />`;
+                htmlBar += `<text x="${x}" y="${hSvg-10}" fill="var(--muted)" font-size="10" text-anchor="middle">${short}</text>`;
             });
-            chart.innerHTML = `<svg width="${w}" height="${h}"><polyline points="${pts.join(' ')}" fill="none" stroke="white" stroke-width="2" />${html}</svg>`;
-            setTimeout(() => chart.scrollLeft = chart.scrollWidth, 50);
+
+            chart.innerHTML = `<svg width="${w}" height="${hSvg}"><polyline points="${pts.join(' ')}" fill="none" stroke="white" stroke-width="2" />${html}</svg>`;
+            
+            chartBar.innerHTML = `<svg width="${w}" height="${hSvg}">
+                <polyline points="${ptsBarLine.join(' ')}" fill="none" stroke="var(--bar-color)" stroke-width="2" />
+                <polyline points="${ptsBarPersLine.join(' ')}" fill="none" stroke="rgba(255,255,255,0.4)" stroke-dasharray="4" stroke-width="2" />
+                ${htmlBar}
+            </svg>`;
+
+            setTimeout(() => { chart.scrollLeft = chart.scrollWidth; chartBar.scrollLeft = chartBar.scrollWidth; }, 50);
         }
 
         window.showTooltip = (e, d, t, h, r) => {
@@ -594,15 +702,36 @@
             const tt = document.getElementById('tooltip');
             document.getElementById('tt-date').textContent = d;
             document.getElementById('tt-total').textContent = fmt(t) + ' ₸';
+            document.getElementById('tt-total').style.color = "var(--text-color)";
             document.getElementById('tt-details').innerHTML = `К: ${h} | З: ${r}`;
+            
             document.querySelectorAll('.active-node').forEach(el => el.remove());
             const target = e.currentTarget;
-            const cx = target.getAttribute('cx'); const cy = target.getAttribute('cy');
-            const chartArea = document.getElementById('trend-chart').querySelector('svg');
             const glow = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-            glow.setAttribute('cx', cx); glow.setAttribute('cy', cy); glow.setAttribute('r', '8'); glow.setAttribute('fill', 'rgba(255,255,255,0.3)');
-            glow.setAttribute('class', 'active-node'); glow.style.pointerEvents = 'none';
-            chartArea.appendChild(glow);
+            glow.setAttribute('cx', target.getAttribute('cx')); glow.setAttribute('cy', target.getAttribute('cy'));
+            glow.setAttribute('r', '8'); glow.setAttribute('fill', 'rgba(255,255,255,0.3)'); glow.setAttribute('class', 'active-node'); glow.style.pointerEvents = 'none';
+            target.parentNode.appendChild(glow);
+
+            const rct = target.getBoundingClientRect();
+            tt.style.left = rct.left + rct.width/2 + 'px'; tt.style.top = rct.top + 'px';
+            tt.classList.add('visible');
+        }
+
+        window.showBarTooltip = (e, d, valB, valP, h, r) => {
+            e.stopPropagation(); 
+            const tt = document.getElementById('tooltip');
+            document.getElementById('tt-date').textContent = d;
+            document.getElementById('tt-total').textContent = fmt(valB) + ' ₸';
+            document.getElementById('tt-total').style.color = "var(--bar-color)";
+            document.getElementById('tt-details').innerHTML = `К: ${h} | З: ${r}<br><span style="color:white; font-size:10px;">Мой доход: ${fmt(valP)} ₸</span>`;
+            
+            document.querySelectorAll('.active-node').forEach(el => el.remove());
+            const target = e.currentTarget;
+            const glow = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            glow.setAttribute('cx', target.getAttribute('cx')); glow.setAttribute('cy', target.getAttribute('cy'));
+            glow.setAttribute('r', '8'); glow.setAttribute('fill', 'rgba(33, 150, 243, 0.3)'); glow.setAttribute('class', 'active-node'); glow.style.pointerEvents = 'none';
+            target.parentNode.appendChild(glow);
+
             const rct = target.getBoundingClientRect();
             tt.style.left = rct.left + rct.width/2 + 'px'; tt.style.top = rct.top + 'px';
             tt.classList.add('visible');
@@ -619,18 +748,16 @@
             const h = parseInt(document.getElementById('manual-hookahs').value)||0;
             const r = parseInt(document.getElementById('manual-replacements').value)||0;
             const tips = parseInt(document.getElementById('manual-tips').value)||0;
-            
             if(!d) return;
             const isW = [5,6,0].includes(new Date(d).getDay());
             const hPrice = isW ? pricesConfig.we_h : pricesConfig.wd_h;
             const rPrice = isW ? pricesConfig.we_r : pricesConfig.wd_r;
-            
             const total = BASE_SALARY + Math.round((h*hPrice + r*rPrice)*0.10) + tips;
             
             const obj = {total, hookahs:h, replacements:r, tips, timestamp: Date.now()};
             await setDoc(doc(db, "shifts", d), obj);
             shiftDataCache[d] = obj;
-            generateReport(); toggleManualForm();
+            if(currentPage > 0) generateReport(); toggleManualForm();
             
             document.getElementById('manual-date').value = '';
             document.getElementById('manual-hookahs').value = '';
