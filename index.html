@@ -61,7 +61,7 @@
 
         /* Слайдер на 3 экрана (300% ширины) */
         .slider-viewport { width: 100%; flex: 1; overflow: hidden; position: relative; }
-        .slider-track { display: flex; width: 300%; height: 100%; transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1); will-change: transform; align-items: flex-start; }
+        .slider-track { display: flex; width: 300%; height: 100%; transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1); will-change: transform; align-items: flex-start; transform: translateX(-33.333333%); }
         .slider-page { width: 33.333333%; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; padding: 0 20px; box-sizing: border-box; }
         .page-content { width: 100%; max-width: 400px; display: flex; flex-direction: column; }
 
@@ -227,6 +227,34 @@
             
             <div class="slider-page" id="page-0">
                 <div class="page-content">
+                    <div class="filters">
+                        <button class="filter-btn active" data-filter="3" onclick="setFilter('3')">3 дня</button>
+                        <button class="filter-btn" data-filter="7" onclick="setFilter('7')">Неделя</button>
+                        <button class="filter-btn" data-filter="30" onclick="setFilter('30')">Месяц</button>
+                        <button class="filter-btn" data-filter="all" onclick="setFilter('all')">Все</button>
+                        <button class="filter-btn" data-filter="custom" onclick="setFilter('custom')">Период</button>
+                    </div>
+                    <div class="date-inputs custom-dates" style="display: none;">
+                        </div>
+
+                    <div class="chart-container"><div class="chart" id="bar-trend-chart" onscroll="hideTooltip()"></div></div>
+
+                    <div class="report-row"><span>Всего кальянов (Бар)</span><span class="bar-color-text" id="bar-stat-hookahs">0</span></div>
+                    <div class="report-row"><span>Всего замен (Бар)</span><span class="bar-color-text" id="bar-stat-replacements">0</span></div>
+                    
+                    <div class="divider"></div>
+                    <div class="report-row total-row"><span>Касса бара</span><span id="bar-stat-total" style="font-size: 22px; color: var(--bar-color);">0 ₸</span></div>
+                    
+                    <textarea id="bulk-bar-input" class="bulk-textarea" rows="4" placeholder="Загрузить смены списком:&#10;28.04.2026 - 15 - 4&#10;29.04.2026 - 12 - 2"></textarea>
+                    <button id="bulk-save-btn" class="save-btn" style="margin-top: 0; padding: 12px; background: var(--bar-color);" onclick="saveBulkBarShifts()">
+                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                        Загрузить стату
+                    </button>
+                </div>
+            </div>
+
+            <div class="slider-page" id="page-1">
+                <div class="page-content">
                     <div class="pickers-wrapper" id="pickers-section">
                         <div class="picker-column">
                             <div class="picker-label">Кальяны</div>
@@ -254,7 +282,7 @@
                 </div>
             </div>
 
-            <div class="slider-page" id="page-1">
+            <div class="slider-page" id="page-2">
                 <div class="page-content">
                     <div class="filters">
                         <button class="filter-btn active" data-filter="3" onclick="setFilter('3')">3 дня</button>
@@ -299,40 +327,12 @@
                 </div>
             </div>
 
-            <div class="slider-page" id="page-2">
-                <div class="page-content">
-                    <div class="filters">
-                        <button class="filter-btn active" data-filter="3" onclick="setFilter('3')">3 дня</button>
-                        <button class="filter-btn" data-filter="7" onclick="setFilter('7')">Неделя</button>
-                        <button class="filter-btn" data-filter="30" onclick="setFilter('30')">Месяц</button>
-                        <button class="filter-btn" data-filter="all" onclick="setFilter('all')">Все</button>
-                        <button class="filter-btn" data-filter="custom" onclick="setFilter('custom')">Период</button>
-                    </div>
-                    <div class="date-inputs custom-dates" style="display: none;">
-                        </div>
-
-                    <div class="chart-container"><div class="chart" id="bar-trend-chart" onscroll="hideTooltip()"></div></div>
-
-                    <div class="report-row"><span>Всего кальянов (Бар)</span><span class="bar-color-text" id="bar-stat-hookahs">0</span></div>
-                    <div class="report-row"><span>Всего замен (Бар)</span><span class="bar-color-text" id="bar-stat-replacements">0</span></div>
-                    
-                    <div class="divider"></div>
-                    <div class="report-row total-row"><span>Касса бара</span><span id="bar-stat-total" style="font-size: 22px; color: var(--bar-color);">0 ₸</span></div>
-                    
-                    <textarea id="bulk-bar-input" class="bulk-textarea" rows="4" placeholder="Загрузить смены списком:&#10;28.04.2026 - 15 - 4&#10;29.04.2026 - 12 - 2"></textarea>
-                    <button id="bulk-save-btn" class="save-btn" style="margin-top: 0; padding: 12px; background: var(--bar-color);" onclick="saveBulkBarShifts()">
-                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
-                        Загрузить стату
-                    </button>
-                </div>
-            </div>
-
         </div>
     </div>
 
     <div class="pager">
-        <div class="pager-dot active" id="dot-0"></div>
-        <div class="pager-dot" id="dot-1"></div>
+        <div class="pager-dot" id="dot-0"></div>
+        <div class="pager-dot active" id="dot-1"></div>
         <div class="pager-dot" id="dot-2"></div>
     </div>
 
@@ -383,27 +383,27 @@
                 btn.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Сохранить`;
                 closeSettings();
             }, 1000);
-            updatePricing(); calc(); if(currentPage > 0) generateReport();
+            updatePricing(); calc(); if(currentPage !== 1) generateReport();
         };
 
         document.getElementById('settings-box').addEventListener('touchstart', e => e.stopPropagation(), {passive: true});
 
         // --- ЛОГИКА НАВИГАЦИИ (3 ЭКРАНА) ---
-        let currentPage = 0;
+        let currentPage = 1;
         const sliderTrack = document.getElementById('slider-track');
 
         function switchPage(pageIndex) {
             currentPage = pageIndex;
             sliderTrack.style.transform = `translateX(-${pageIndex * 33.333333}%)`;
             
-            const titles = ['Смена', 'Моя Аналитика', 'Общая Стата'];
+            const titles = ['Общая Стата', 'Смена', 'Моя Аналитика'];
             document.getElementById('main-title').textContent = titles[pageIndex];
 
             document.getElementById('dot-0').classList.toggle('active', pageIndex === 0);
             document.getElementById('dot-1').classList.toggle('active', pageIndex === 1);
             document.getElementById('dot-2').classList.toggle('active', pageIndex === 2);
             
-            if (pageIndex > 0) generateReport();
+            if (pageIndex !== 1) generateReport();
             hideTooltip();
         }
 
@@ -451,7 +451,7 @@
 
                 document.getElementById('db-status').textContent = "FIREBASE OK";
                 document.getElementById('db-status').style.color = "#4caf50";
-                if(currentPage > 0) generateReport();
+                if(currentPage !== 1) generateReport();
             } catch (e) { document.getElementById('db-status').textContent = "ОШИБКА"; }
         }
 
@@ -498,7 +498,7 @@
                     }
                     btn.textContent = "Готово!";
                     document.getElementById('bulk-bar-input').value = '';
-                    if(currentPage > 0) generateReport();
+                    if(currentPage !== 1) generateReport();
                 } catch(e) { btn.textContent = "Ошибка БД"; }
                 setTimeout(() => {
                     btn.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg> Загрузить стату`;
@@ -757,7 +757,7 @@
             const obj = {total, hookahs:h, replacements:r, tips, timestamp: Date.now()};
             await setDoc(doc(db, "shifts", d), obj);
             shiftDataCache[d] = obj;
-            if(currentPage > 0) generateReport(); toggleManualForm();
+            if(currentPage !== 1) generateReport(); toggleManualForm();
             
             document.getElementById('manual-date').value = '';
             document.getElementById('manual-hookahs').value = '';
