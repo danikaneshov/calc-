@@ -8,19 +8,44 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Смена">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#000000">
+    <meta id="theme-color-meta" name="theme-color" content="#000000">
     
     <title>Смена / Аналитика</title>
     
     <style>
-        :root {
+        /* === ДВИЖОК ТЕМ === */
+        
+        /* 1. Тема по умолчанию (Old) */
+        :root, [data-theme="old"] {
             --bg-color: #000000;
             --text-color: #ffffff;
             --highlight: #111111;
             --muted: #666666;
             --border: #222222;
             --accent: #ff9800; 
-            --bar-color: #2196f3; /* Цвет для кассы бара */
+            --bar-color: #2196f3;
+        }
+
+        /* 2. Тема "Cotton" (Скрин 1) */
+        [data-theme="blue"] {
+            --bg-color: #FFDBFD;
+            --text-color: #111111;
+            --highlight: #fcf0fb;
+            --muted: #8494FF;
+            --border: #C9BEFF;
+            --accent: #6367FF; 
+            --bar-color: #8494FF;
+        }
+
+        /* 3. Тема "Neon" (Скрин 2 - Halloween) */
+        [data-theme="purple"] {
+            --bg-color: #2E073F;
+            --text-color: #EBD3F8;
+            --highlight: #1e042a;
+            --muted: #7A1CAC;
+            --border: #7A1CAC;
+            --accent: #AD49E1; 
+            --bar-color: #AD49E1;
         }
 
         body {
@@ -33,6 +58,7 @@
             min-height: 100vh; box-sizing: border-box; letter-spacing: -0.5px;
             overflow-x: hidden; -webkit-user-select: none; user-select: none;
             touch-action: manipulation;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
@@ -59,9 +85,8 @@
 
         #db-status { color: var(--accent); }
 
-        /* Слайдер на 3 экрана (300% ширины) */
         .slider-viewport { width: 100%; flex: 1; overflow: hidden; position: relative; }
-        .slider-track { display: flex; width: 300%; height: 100%; transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1); will-change: transform; align-items: flex-start; transform: translateX(-33.333333%); }
+        .slider-track { display: flex; width: 300%; height: 100%; transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1); will-change: transform; align-items: flex-start; }
         .slider-page { width: 33.333333%; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; padding: 0 20px; box-sizing: border-box; }
         .page-content { width: 100%; max-width: 400px; display: flex; flex-direction: column; }
 
@@ -71,16 +96,21 @@
         .picker-container {
             height: 120px; width: 100%; position: relative; background-color: var(--highlight);
             border-radius: 4px; overflow: hidden; border: 1px solid var(--border);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
         }
         .picker-container::before {
             content: ""; position: absolute; top: 40px; left: 0; right: 0; height: 40px;
-            background-color: rgba(255, 255, 255, 0.03); border-top: 1px solid rgba(255,255,255,0.1);
-            border-bottom: 1px solid rgba(255,255,255,0.1); pointer-events: none; z-index: 2;
+            background-color: rgba(255, 255, 255, 0.03); border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border); pointer-events: none; z-index: 2;
         }
         .picker { height: 100%; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; -ms-overflow-style: none; position: relative; z-index: 1; scroll-behavior: smooth; }
         .picker::-webkit-scrollbar { display: none; }
         .spacer { height: 40px; }
-        .picker-item { height: 40px; line-height: 40px; text-align: center; font-size: 18px; font-weight: 600; scroll-snap-align: center; color: #333; transition: all 0.2s ease; cursor: pointer; }
+        
+        .picker-item { 
+            height: 40px; line-height: 40px; text-align: center; font-size: 18px; font-weight: 600; 
+            scroll-snap-align: center; color: var(--muted); transition: all 0.2s ease; cursor: pointer; 
+        }
         .picker-item.active { color: var(--text-color); font-size: 24px; }
 
         .report-row { display: flex; justify-content: space-between; align-items: flex-end; padding: 8px 0; font-size: 14px; color: var(--muted); }
@@ -95,7 +125,7 @@
             margin-right: 4px; border-bottom: 1px dashed var(--muted); border-radius: 0;
         }
         .tip-input:focus { outline: none; border-bottom: 1px solid var(--text-color); }
-        .tip-input::placeholder { color: var(--muted); }
+        .tip-input::placeholder { color: var(--muted); opacity: 0.5; }
 
         .save-btn {
             width: 100%; padding: 15px; margin-top: 20px; background-color: var(--text-color); color: var(--bg-color);
@@ -124,26 +154,25 @@
         .chart::-webkit-scrollbar { display: none; }
         .chart-node-hitbox { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 
-        .insights-block { background-color: #0a0a0a; border: 1px dashed var(--border); border-radius: 4px; padding: 15px; margin-top: 15px; }
+        .insights-block { background-color: var(--highlight); border: 1px dashed var(--border); border-radius: 4px; padding: 15px; margin-top: 15px; transition: 0.3s; }
         .insight-row { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-bottom: 8px; }
         .insight-row span:last-child { color: var(--accent); font-weight: 700; text-transform: uppercase; }
 
         .chart-tooltip {
-            position: fixed; background: rgba(28, 28, 30, 0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1); color: var(--text-color); padding: 10px 14px; border-radius: 8px;
+            position: fixed; background: rgba(28, 28, 30, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1); color: #ffffff; padding: 10px 14px; border-radius: 8px;
             font-size: 13px; pointer-events: none; opacity: 0; transform: translate(-50%, 10px);
             transition: opacity 0.2s, transform 0.2s; z-index: 100; text-align: center; white-space: nowrap;
         }
         .chart-tooltip.visible { opacity: 1; transform: translate(-50%, -15px); }
 
         .manual-form { display: none; background: var(--highlight); border: 1px solid var(--border); padding: 15px; margin-top: 15px; border-radius: 4px; }
-        .manual-form input { width: 100%; background: #000; border: 1px solid var(--border); color: var(--text-color); padding: 12px; border-radius: 4px; margin-bottom: 10px; box-sizing: border-box; color-scheme: dark; }
+        .manual-form input { width: 100%; background: var(--bg-color); border: 1px solid var(--border); color: var(--text-color); padding: 12px; border-radius: 4px; margin-bottom: 10px; box-sizing: border-box; color-scheme: dark; }
 
-        /* Массовый ввод смен бара */
         .bulk-textarea {
-            width: 100%; background: #000; border: 1px dashed var(--border); color: var(--text-color);
+            width: 100%; background: var(--bg-color); border: 1px dashed var(--border); color: var(--text-color);
             padding: 12px; border-radius: 4px; box-sizing: border-box; font-family: monospace; font-size: 12px;
-            resize: none; margin-top: 15px; margin-bottom: 10px; outline: none;
+            resize: none; margin-top: 15px; margin-bottom: 10px; outline: none; transition: 0.3s;
         }
         .bulk-textarea:focus { border-color: var(--bar-color); }
 
@@ -162,12 +191,21 @@
         .cfg-label { display: block; font-size: 11px; color: var(--muted); text-transform: uppercase; margin-bottom: 6px; font-weight: 600;}
         .cfg-inputs { display: flex; gap: 10px; width: 100%; }
         .cfg-inputs input {
-            flex: 1; min-width: 0; width: 100%; background: #000; border: 1px solid var(--border); color: var(--text-color);
+            flex: 1; min-width: 0; width: 100%; background: var(--bg-color); border: 1px solid var(--border); color: var(--text-color);
             padding: 10px; border-radius: 4px; text-align: center; font-size: 14px; font-weight: 600; font-family: inherit; box-sizing: border-box;
         }
+        
+        .theme-selector { display: flex; gap: 8px; margin-bottom: 25px; }
+        .theme-btn {
+            flex: 1; padding: 10px 0; border: 1px solid var(--border); background: var(--bg-color);
+            color: var(--muted); border-radius: 4px; font-size: 10px; font-weight: 800; cursor: pointer;
+            text-transform: uppercase; transition: 0.2s;
+        }
+        .theme-btn.active { border-color: var(--accent); background: var(--accent); color: var(--bg-color); }
+
         .breakdown-row { font-size: 12px; margin-top: -5px; }
         .breakdown-row span:first-child { color: var(--muted); }
-        .breakdown-row span:last-child { color: #aaaaaa; }
+        .breakdown-row span:last-child { color: var(--muted); opacity: 0.8; }
 
         .bar-color-text { color: var(--bar-color) !important; }
     </style>
@@ -175,14 +213,24 @@
 <body>
 
     <div id="tooltip" class="chart-tooltip">
-        <div style="font-size: 10px; color: var(--muted); font-weight: 800; margin-bottom: 4px;" id="tt-date">--</div>
+        <div style="font-size: 10px; color: #aaa; font-weight: 800; margin-bottom: 4px;" id="tt-date">--</div>
         <div style="font-size: 18px; font-weight: 800;" id="tt-total">--</div>
-        <div style="font-size: 11px; color: var(--muted);" id="tt-details">--</div>
+        <div style="font-size: 11px; color: #aaa;" id="tt-details">--</div>
     </div>
 
     <div id="settings-modal" class="modal-overlay">
         <div class="settings-content" id="settings-box">
-            <h2>Настройки цен</h2>
+            <h2>Настройки</h2>
+            
+            <div class="cfg-group">
+                <span class="cfg-label">Тема оформления</span>
+                <div class="theme-selector">
+                    <button class="theme-btn" data-theme-btn="old" onclick="setAppTheme('old')">OLD</button>
+                    <button class="theme-btn" data-theme-btn="blue" onclick="setAppTheme('blue')">COTTON</button>
+                    <button class="theme-btn" data-theme-btn="purple" onclick="setAppTheme('purple')">NEON</button>
+                </div>
+            </div>
+
             <div class="cfg-group">
                 <span class="cfg-label">Будние: Кальян / Замена</span>
                 <div class="cfg-inputs">
@@ -199,10 +247,10 @@
             </div>
             <button id="cfg-save-btn" class="save-btn" style="margin-top: 10px; padding: 12px;" onclick="saveConfig()">
                 <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                Сохранить
+                Сохранить цены
             </button>
             <button class="save-btn secondary-btn" style="margin-top: 10px; padding: 12px;" onclick="closeSettings()">
-                Отмена
+                Закрыть
             </button>
         </div>
     </div>
@@ -226,34 +274,6 @@
         <div class="slider-track" id="slider-track">
             
             <div class="slider-page" id="page-0">
-                <div class="page-content">
-                    <div class="filters">
-                        <button class="filter-btn active" data-filter="3" onclick="setFilter('3')">3 дня</button>
-                        <button class="filter-btn" data-filter="7" onclick="setFilter('7')">Неделя</button>
-                        <button class="filter-btn" data-filter="30" onclick="setFilter('30')">Месяц</button>
-                        <button class="filter-btn" data-filter="all" onclick="setFilter('all')">Все</button>
-                        <button class="filter-btn" data-filter="custom" onclick="setFilter('custom')">Период</button>
-                    </div>
-                    <div class="date-inputs custom-dates" style="display: none;">
-                        </div>
-
-                    <div class="chart-container"><div class="chart" id="bar-trend-chart" onscroll="hideTooltip()"></div></div>
-
-                    <div class="report-row"><span>Всего кальянов (Бар)</span><span class="bar-color-text" id="bar-stat-hookahs">0</span></div>
-                    <div class="report-row"><span>Всего замен (Бар)</span><span class="bar-color-text" id="bar-stat-replacements">0</span></div>
-                    
-                    <div class="divider"></div>
-                    <div class="report-row total-row"><span>Касса бара</span><span id="bar-stat-total" style="font-size: 22px; color: var(--bar-color);">0 ₸</span></div>
-                    
-                    <textarea id="bulk-bar-input" class="bulk-textarea" rows="4" placeholder="Загрузить смены списком:&#10;28.04.2026 - 15 - 4&#10;29.04.2026 - 12 - 2"></textarea>
-                    <button id="bulk-save-btn" class="save-btn" style="margin-top: 0; padding: 12px; background: var(--bar-color);" onclick="saveBulkBarShifts()">
-                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
-                        Загрузить стату
-                    </button>
-                </div>
-            </div>
-
-            <div class="slider-page" id="page-1">
                 <div class="page-content">
                     <div class="pickers-wrapper" id="pickers-section">
                         <div class="picker-column">
@@ -282,7 +302,7 @@
                 </div>
             </div>
 
-            <div class="slider-page" id="page-2">
+            <div class="slider-page" id="page-1">
                 <div class="page-content">
                     <div class="filters">
                         <button class="filter-btn active" data-filter="3" onclick="setFilter('3')">3 дня</button>
@@ -327,12 +347,40 @@
                 </div>
             </div>
 
+            <div class="slider-page" id="page-2">
+                <div class="page-content">
+                    <div class="filters">
+                        <button class="filter-btn active" data-filter="3" onclick="setFilter('3')">3 дня</button>
+                        <button class="filter-btn" data-filter="7" onclick="setFilter('7')">Неделя</button>
+                        <button class="filter-btn" data-filter="30" onclick="setFilter('30')">Месяц</button>
+                        <button class="filter-btn" data-filter="all" onclick="setFilter('all')">Все</button>
+                        <button class="filter-btn" data-filter="custom" onclick="setFilter('custom')">Период</button>
+                    </div>
+                    <div class="date-inputs custom-dates" style="display: none;">
+                        </div>
+
+                    <div class="chart-container"><div class="chart" id="bar-trend-chart" onscroll="hideTooltip()"></div></div>
+
+                    <div class="report-row"><span>Всего кальянов (Бар)</span><span class="bar-color-text" id="bar-stat-hookahs">0</span></div>
+                    <div class="report-row"><span>Всего замен (Бар)</span><span class="bar-color-text" id="bar-stat-replacements">0</span></div>
+                    
+                    <div class="divider"></div>
+                    <div class="report-row total-row"><span>Касса бара</span><span id="bar-stat-total" style="font-size: 22px; color: var(--bar-color);">0 ₸</span></div>
+                    
+                    <textarea id="bulk-bar-input" class="bulk-textarea" rows="4" placeholder="Загрузить смены списком:&#10;28.04.2026 - 15 - 4&#10;29.04.2026 - 12 - 2"></textarea>
+                    <button id="bulk-save-btn" class="save-btn" style="margin-top: 0; padding: 12px; background: var(--bar-color); color: var(--bg-color);" onclick="saveBulkBarShifts()">
+                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                        Загрузить стату
+                    </button>
+                </div>
+            </div>
+
         </div>
     </div>
 
     <div class="pager">
-        <div class="pager-dot" id="dot-0"></div>
-        <div class="pager-dot active" id="dot-1"></div>
+        <div class="pager-dot active" id="dot-0"></div>
+        <div class="pager-dot" id="dot-1"></div>
         <div class="pager-dot" id="dot-2"></div>
     </div>
 
@@ -359,6 +407,30 @@
 
         const fmt = (num) => num.toLocaleString('ru-RU');
 
+        // --- УПРАВЛЕНИЕ ТЕМАМИ ---
+        function applyTheme(themeName) {
+            document.documentElement.setAttribute('data-theme', themeName);
+            localStorage.setItem('app_theme', themeName);
+            
+            // Обновляем цвет статус-бара iOS
+            const bgColor = getComputedStyle(document.documentElement).getPropertyValue('--bg-color').trim();
+            document.getElementById('theme-color-meta').setAttribute('content', bgColor);
+            
+            document.querySelectorAll('.theme-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-theme-btn') === themeName);
+            });
+        }
+
+        window.setAppTheme = (themeName) => {
+            applyTheme(themeName);
+            if(currentPage > 0) generateReport(); // Перерисовка графиков с новыми цветами
+        };
+
+        // Загрузка темы при старте
+        const savedTheme = localStorage.getItem('app_theme') || 'old';
+        applyTheme(savedTheme);
+
+
         // --- КОНФИГ ЦЕН ---
         let pricesConfig = JSON.parse(localStorage.getItem('shift_prices_config')) || { wd_h: 4900, wd_r: 4490, we_h: 7900, we_r: 5900 };
 
@@ -380,30 +452,29 @@
             try { await setDoc(doc(db, "settings", "prices"), pricesConfig); btn.textContent = "Сохранено"; } 
             catch (e) { btn.textContent = "Ошибка БД"; }
             setTimeout(() => {
-                btn.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Сохранить`;
-                closeSettings();
+                btn.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Сохранить цены`;
             }, 1000);
-            updatePricing(); calc(); if(currentPage !== 1) generateReport();
+            updatePricing(); calc(); if(currentPage > 0) generateReport();
         };
 
         document.getElementById('settings-box').addEventListener('touchstart', e => e.stopPropagation(), {passive: true});
 
-        // --- ЛОГИКА НАВИГАЦИИ (3 ЭКРАНА) ---
-        let currentPage = 1;
+        // --- ЛОГИКА НАВИГАЦИИ ---
+        let currentPage = 0;
         const sliderTrack = document.getElementById('slider-track');
 
         function switchPage(pageIndex) {
             currentPage = pageIndex;
             sliderTrack.style.transform = `translateX(-${pageIndex * 33.333333}%)`;
             
-            const titles = ['Общая Стата', 'Смена', 'Моя Аналитика'];
+            const titles = ['Смена', 'Моя Аналитика', 'Общая Стата'];
             document.getElementById('main-title').textContent = titles[pageIndex];
 
             document.getElementById('dot-0').classList.toggle('active', pageIndex === 0);
             document.getElementById('dot-1').classList.toggle('active', pageIndex === 1);
             document.getElementById('dot-2').classList.toggle('active', pageIndex === 2);
             
-            if (pageIndex !== 1) generateReport();
+            if (pageIndex > 0) generateReport();
             hideTooltip();
         }
 
@@ -431,7 +502,7 @@
             }
         }
 
-        // --- Firebase (Мои + Бар) ---
+        // --- Firebase ---
         async function fetchData() {
             try {
                 const configSnap = await getDoc(doc(db, "settings", "prices"));
@@ -440,45 +511,34 @@
                     localStorage.setItem('shift_prices_config', JSON.stringify(pricesConfig));
                     updatePricing(); calc();
                 }
-
-                // Качаем личные смены
                 const snap = await getDocs(collection(db, "shifts"));
                 snap.forEach(d => { shiftDataCache[d.id] = d.data(); });
-                
-                // Качаем общие смены бара
                 const barSnap = await getDocs(collection(db, "bar_shifts"));
                 barSnap.forEach(d => { barDataCache[d.id] = d.data(); });
 
                 document.getElementById('db-status').textContent = "FIREBASE OK";
                 document.getElementById('db-status').style.color = "#4caf50";
-                if(currentPage !== 1) generateReport();
+                if(currentPage > 0) generateReport();
             } catch (e) { document.getElementById('db-status').textContent = "ОШИБКА"; }
         }
 
         window.saveCurrentShift = async function() {
             const btn = document.querySelector('.save-btn');
-            const ogHtml = btn.innerHTML;
-            btn.innerHTML = "СОХРАНЕНИЕ...";
+            const ogHtml = btn.innerHTML; btn.innerHTML = "СОХРАНЕНИЕ...";
             try {
                 const tipsVal = parseInt(document.getElementById('tips-input').value) || 0;
                 const obj = { total: finalSum, hookahs: hookahCount, replacements: replacementCount, tips: tipsVal, timestamp: Date.now() };
                 await setDoc(doc(db, "shifts", shiftDateStr), obj);
-                shiftDataCache[shiftDateStr] = obj;
-                btn.innerHTML = "СОХРАНЕНО";
+                shiftDataCache[shiftDateStr] = obj; btn.innerHTML = "СОХРАНЕНО";
             } catch (e) { btn.innerHTML = "ОШИБКА"; }
             setTimeout(() => btn.innerHTML = ogHtml, 2000);
         };
 
-        // --- Парсер массового ввода (Общая стата) ---
         window.saveBulkBarShifts = async () => {
             const text = document.getElementById('bulk-bar-input').value;
-            const lines = text.split('\n');
-            const batchArr = [];
-            
+            const lines = text.split('\n'); const batchArr = [];
             for (let line of lines) {
-                line = line.trim();
-                if(!line) continue;
-                // Формат: ДД.ММ.ГГГГ - 1 - 2 (допускает точки, слэши, запятые и тире как разделители)
+                line = line.trim(); if(!line) continue;
                 const match = line.match(/(\d{1,2})[\.\/,-](\d{1,2})[\.\/,-](\d{2,4})\s*-\s*(\d+)\s*-\s*(\d+)/);
                 if(match) {
                     let [_, d, m, y, h, r] = match;
@@ -487,25 +547,18 @@
                     batchArr.push({ date: dateStr, h: parseInt(h), r: parseInt(r) });
                 }
             }
-            
             if(batchArr.length > 0) {
-                const btn = document.getElementById('bulk-save-btn');
-                btn.textContent = "Сохранение...";
+                const btn = document.getElementById('bulk-save-btn'); btn.textContent = "Сохранение...";
                 try {
                     for(let item of batchArr) {
                         await setDoc(doc(db, "bar_shifts", item.date), { hookahs: item.h, replacements: item.r, timestamp: Date.now() });
                         barDataCache[item.date] = { hookahs: item.h, replacements: item.r };
                     }
-                    btn.textContent = "Готово!";
-                    document.getElementById('bulk-bar-input').value = '';
-                    if(currentPage !== 1) generateReport();
+                    btn.textContent = "Готово!"; document.getElementById('bulk-bar-input').value = '';
+                    if(currentPage > 0) generateReport();
                 } catch(e) { btn.textContent = "Ошибка БД"; }
-                setTimeout(() => {
-                    btn.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg> Загрузить стату`;
-                }, 2000);
-            } else {
-                alert("Формат строк не распознан. Используй: ДД.ММ.ГГГГ - Кальяны - Замены");
-            }
+                setTimeout(() => { btn.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg> Загрузить стату`; }, 2000);
+            } else { alert("Формат строк не распознан. Используй: ДД.ММ.ГГГГ - Кальяны - Замены"); }
         };
 
         // --- Калькулятор ---
@@ -565,10 +618,8 @@
         }
 
         window.generateReport = () => {
-            // Собираем все уникальные даты из личных смен и смен бара
             const allDatesSet = new Set([...Object.keys(shiftDataCache), ...Object.keys(barDataCache)]);
             const dates = Array.from(allDatesSet).sort();
-            
             let target = []; const today = new Date(); today.setHours(0,0,0,0);
             if(currentFilter === 'all') target = dates;
             else if (currentFilter === 'custom') {
@@ -582,10 +633,7 @@
         }
 
         function render(dates) {
-            // Личная стата
             let total=0, hookahs=0, worked=0, max=1, tipsTotal=0, bestDateStr='-', bestDateMax=0;
-            
-            // Общая стата бара
             let barTotalKassa=0, barTotalH=0, barTotalR=0, maxBar=1;
 
             const chart = document.getElementById('trend-chart');
@@ -594,36 +642,23 @@
             let pts=[], ptsBarLine=[], ptsBarPersLine=[], html='', htmlBar='';
 
             dates.forEach(d => {
-                // 1. Считаем личную
                 if(shiftDataCache[d]) {
-                    worked++; total+=shiftDataCache[d].total; hookahs+=shiftDataCache[d].hookahs;
-                    tipsTotal+=(shiftDataCache[d].tips || 0);
+                    worked++; total+=shiftDataCache[d].total; hookahs+=shiftDataCache[d].hookahs; tipsTotal+=(shiftDataCache[d].tips || 0);
                     if(shiftDataCache[d].total > max) max = shiftDataCache[d].total;
                     if(shiftDataCache[d].total > bestDateMax) { bestDateMax = shiftDataCache[d].total; bestDateStr = d; }
                 }
-
-                // 2. Считаем Бар (Если нет общей, но есть личная - берем личную за основу)
-                const pData = shiftDataCache[d] || null;
-                const bData = barDataCache[d] || null;
-                
+                const pData = shiftDataCache[d] || null; const bData = barDataCache[d] || null;
                 let dayBarH = bData ? bData.hookahs : (pData ? pData.hookahs : 0);
                 let dayBarR = bData ? bData.replacements : (pData ? pData.replacements : 0);
-                
                 const isW = [5,6,0].includes(new Date(d).getDay());
-                const pH = isW ? pricesConfig.we_h : pricesConfig.wd_h;
-                const pR = isW ? pricesConfig.we_r : pricesConfig.wd_r;
-                
+                const pH = isW ? pricesConfig.we_h : pricesConfig.wd_h; const pR = isW ? pricesConfig.we_r : pricesConfig.wd_r;
                 const dayBarKassa = (dayBarH * pH) + (dayBarR * pR);
-                
                 if (dayBarH > 0 || dayBarR > 0) {
-                    barTotalH += dayBarH;
-                    barTotalR += dayBarR;
-                    barTotalKassa += dayBarKassa;
+                    barTotalH += dayBarH; barTotalR += dayBarR; barTotalKassa += dayBarKassa;
                     if(dayBarKassa > maxBar) maxBar = dayBarKassa;
                 }
             });
             
-            // Обновление цифр ЭКРАНА 1 (Личная)
             document.getElementById('stat-shifts').textContent = worked;
             document.getElementById('stat-hookahs').textContent = hookahs;
             document.getElementById('stat-total').textContent = fmt(total) + ' ₸';
@@ -632,65 +667,49 @@
             document.getElementById('stat-avg').textContent = worked ? fmt(Math.round(total/worked)) + ' ₸' : '0 ₸';
             document.getElementById('stat-best-day').textContent = bestDateStr !== '-' ? new Date(bestDateStr).toLocaleDateString('ru-RU') : '-';
 
-            // Обновление цифр ЭКРАНА 2 (Бар)
             document.getElementById('bar-stat-hookahs').textContent = barTotalH;
             document.getElementById('bar-stat-replacements').textContent = barTotalR;
             document.getElementById('bar-stat-total').textContent = fmt(barTotalKassa) + ' ₸';
 
             if(!dates.length) { chart.innerHTML=''; chartBar.innerHTML=''; return; }
             
-            // РЕНДЕР ГРАФИКОВ
             dates.forEach((d, i) => {
                 const isW = [5,6,0].includes(new Date(d).getDay());
-                const pH = isW ? pricesConfig.we_h : pricesConfig.wd_h;
-                const pR = isW ? pricesConfig.we_r : pricesConfig.wd_r;
-
-                const pData = shiftDataCache[d] || null;
-                const bData = barDataCache[d] || null;
-                
-                // Личные данные точки
+                const pH = isW ? pricesConfig.we_h : pricesConfig.wd_h; const pR = isW ? pricesConfig.we_r : pricesConfig.wd_r;
+                const pData = shiftDataCache[d] || null; const bData = barDataCache[d] || null;
                 const valP = pData ? pData.total : 0;
-                
-                // Данные бара для точки
                 let dayBarH = bData ? bData.hookahs : (pData ? pData.hookahs : 0);
                 let dayBarR = bData ? bData.replacements : (pData ? pData.replacements : 0);
                 const valB = (dayBarH * pH) + (dayBarR * pR);
 
                 const x = dates.length===1 ? w/2 : pX+(i*(w-2*pX)/(dates.length-1));
-                
-                // Y для личного графика
                 const yP = pYT + (hSvg-pYT-pYB) - (valP/max)*(hSvg-pYT-pYB);
                 pts.push(`${x},${yP}`);
 
-                // Y для графика Бара (масштаб по maxBar)
+                // Для бара строим двойной график, где оба зависят от maxBar, чтобы показать масштаб
                 const yBar = pYT + (hSvg-pYT-pYB) - (valB/maxBar)*(hSvg-pYT-pYB);
                 const yBarPers = pYT + (hSvg-pYT-pYB) - (valP/maxBar)*(hSvg-pYT-pYB);
-                ptsBarLine.push(`${x},${yBar}`);
-                ptsBarPersLine.push(`${x},${yBarPers}`);
+                ptsBarLine.push(`${x},${yBar}`); ptsBarPersLine.push(`${x},${yBarPers}`);
 
                 const short = d.split('-')[2]+'.'+d.split('-')[1];
 
-                // Точки для личного
                 if(valP===max && valP>0) {
-                    html += `<circle cx="${x}" cy="${yP}" r="6" fill="black" stroke="var(--accent)" stroke-width="2" />`;
+                    html += `<circle cx="${x}" cy="${yP}" r="6" fill="var(--bg-color)" stroke="var(--accent)" stroke-width="2" />`;
                     html += `<text x="${x}" y="${yP-12}" fill="var(--accent)" font-size="9" font-weight="bold" text-anchor="middle">MAX</text>`;
-                } else { html += `<circle cx="${x}" cy="${yP}" r="3" fill="black" stroke="white" stroke-width="2" />`; }
+                } else { html += `<circle cx="${x}" cy="${yP}" r="3" fill="var(--bg-color)" stroke="var(--text-color)" stroke-width="2" />`; }
                 html += `<circle cx="${x}" cy="${yP}" r="20" fill="transparent" class="chart-node-hitbox" onclick="showTooltip(event,'${d}',${valP},${pData?pData.hookahs:0},${pData?pData.replacements:0})" />`;
                 html += `<text x="${x}" y="${hSvg-10}" fill="var(--muted)" font-size="10" text-anchor="middle">${short}</text>`;
 
-                // Точки для Бара
-                htmlBar += `<circle cx="${x}" cy="${yBar}" r="3" fill="black" stroke="var(--bar-color)" stroke-width="2" />`;
-                htmlBar += `<circle cx="${x}" cy="${yBarPers}" r="3" fill="black" stroke="white" stroke-width="2" />`;
-                // Специальный тултип для двойного графика
+                htmlBar += `<circle cx="${x}" cy="${yBar}" r="3" fill="var(--bg-color)" stroke="var(--bar-color)" stroke-width="2" />`;
+                htmlBar += `<circle cx="${x}" cy="${yBarPers}" r="3" fill="var(--bg-color)" stroke="var(--muted)" stroke-width="2" />`;
                 htmlBar += `<circle cx="${x}" cy="${yBar}" r="25" fill="transparent" class="chart-node-hitbox" onclick="showBarTooltip(event,'${d}',${valB},${valP},${dayBarH},${dayBarR})" />`;
                 htmlBar += `<text x="${x}" y="${hSvg-10}" fill="var(--muted)" font-size="10" text-anchor="middle">${short}</text>`;
             });
 
-            chart.innerHTML = `<svg width="${w}" height="${hSvg}"><polyline points="${pts.join(' ')}" fill="none" stroke="white" stroke-width="2" />${html}</svg>`;
-            
+            chart.innerHTML = `<svg width="${w}" height="${hSvg}"><polyline points="${pts.join(' ')}" fill="none" stroke="var(--text-color)" stroke-width="2" />${html}</svg>`;
             chartBar.innerHTML = `<svg width="${w}" height="${hSvg}">
                 <polyline points="${ptsBarLine.join(' ')}" fill="none" stroke="var(--bar-color)" stroke-width="2" />
-                <polyline points="${ptsBarPersLine.join(' ')}" fill="none" stroke="rgba(255,255,255,0.4)" stroke-dasharray="4" stroke-width="2" />
+                <polyline points="${ptsBarPersLine.join(' ')}" fill="none" stroke="var(--muted)" stroke-dasharray="4" stroke-width="2" />
                 ${htmlBar}
             </svg>`;
 
@@ -702,16 +721,14 @@
             const tt = document.getElementById('tooltip');
             document.getElementById('tt-date').textContent = d;
             document.getElementById('tt-total').textContent = fmt(t) + ' ₸';
-            document.getElementById('tt-total').style.color = "var(--text-color)";
+            document.getElementById('tt-total').style.color = "white";
             document.getElementById('tt-details').innerHTML = `К: ${h} | З: ${r}`;
-            
             document.querySelectorAll('.active-node').forEach(el => el.remove());
             const target = e.currentTarget;
             const glow = document.createElementNS("http://www.w3.org/2000/svg", "circle");
             glow.setAttribute('cx', target.getAttribute('cx')); glow.setAttribute('cy', target.getAttribute('cy'));
-            glow.setAttribute('r', '8'); glow.setAttribute('fill', 'rgba(255,255,255,0.3)'); glow.setAttribute('class', 'active-node'); glow.style.pointerEvents = 'none';
+            glow.setAttribute('r', '8'); glow.setAttribute('fill', 'var(--text-color)'); glow.setAttribute('opacity', '0.3'); glow.setAttribute('class', 'active-node'); glow.style.pointerEvents = 'none';
             target.parentNode.appendChild(glow);
-
             const rct = target.getBoundingClientRect();
             tt.style.left = rct.left + rct.width/2 + 'px'; tt.style.top = rct.top + 'px';
             tt.classList.add('visible');
@@ -723,15 +740,13 @@
             document.getElementById('tt-date').textContent = d;
             document.getElementById('tt-total').textContent = fmt(valB) + ' ₸';
             document.getElementById('tt-total').style.color = "var(--bar-color)";
-            document.getElementById('tt-details').innerHTML = `К: ${h} | З: ${r}<br><span style="color:white; font-size:10px;">Мой доход: ${fmt(valP)} ₸</span>`;
-            
+            document.getElementById('tt-details').innerHTML = `К: ${h} | З: ${r}<br><span style="color:#aaa; font-size:10px;">Мой доход: ${fmt(valP)} ₸</span>`;
             document.querySelectorAll('.active-node').forEach(el => el.remove());
             const target = e.currentTarget;
             const glow = document.createElementNS("http://www.w3.org/2000/svg", "circle");
             glow.setAttribute('cx', target.getAttribute('cx')); glow.setAttribute('cy', target.getAttribute('cy'));
-            glow.setAttribute('r', '8'); glow.setAttribute('fill', 'rgba(33, 150, 243, 0.3)'); glow.setAttribute('class', 'active-node'); glow.style.pointerEvents = 'none';
+            glow.setAttribute('r', '8'); glow.setAttribute('fill', 'var(--bar-color)'); glow.setAttribute('opacity', '0.3'); glow.setAttribute('class', 'active-node'); glow.style.pointerEvents = 'none';
             target.parentNode.appendChild(glow);
-
             const rct = target.getBoundingClientRect();
             tt.style.left = rct.left + rct.width/2 + 'px'; tt.style.top = rct.top + 'px';
             tt.classList.add('visible');
@@ -750,19 +765,14 @@
             const tips = parseInt(document.getElementById('manual-tips').value)||0;
             if(!d) return;
             const isW = [5,6,0].includes(new Date(d).getDay());
-            const hPrice = isW ? pricesConfig.we_h : pricesConfig.wd_h;
-            const rPrice = isW ? pricesConfig.we_r : pricesConfig.wd_r;
+            const hPrice = isW ? pricesConfig.we_h : pricesConfig.wd_h; const rPrice = isW ? pricesConfig.we_r : pricesConfig.wd_r;
             const total = BASE_SALARY + Math.round((h*hPrice + r*rPrice)*0.10) + tips;
-            
             const obj = {total, hookahs:h, replacements:r, tips, timestamp: Date.now()};
             await setDoc(doc(db, "shifts", d), obj);
             shiftDataCache[d] = obj;
-            if(currentPage !== 1) generateReport(); toggleManualForm();
-            
-            document.getElementById('manual-date').value = '';
-            document.getElementById('manual-hookahs').value = '';
-            document.getElementById('manual-replacements').value = '';
-            document.getElementById('manual-tips').value = '';
+            if(currentPage > 0) generateReport(); toggleManualForm();
+            document.getElementById('manual-date').value = ''; document.getElementById('manual-hookahs').value = '';
+            document.getElementById('manual-replacements').value = ''; document.getElementById('manual-tips').value = '';
         }
 
         initPickers(); updatePricing(); fetchData();
