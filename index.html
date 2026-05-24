@@ -589,6 +589,86 @@
         .bar-color-text {
             color: var(--bar-color) !important;
         }
+
+        .export-textarea {
+            width: 100%;
+            background: #000;
+            border: 1px solid var(--border);
+            color: var(--text-color);
+            padding: 12px;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-family: monospace;
+            font-size: 11px;
+            resize: none;
+            height: 120px;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            outline: none;
+            color-scheme: dark;
+        }
+
+        .export-textarea:focus {
+            border-color: var(--accent);
+        }
+
+        .shifts-list {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 10px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background: #000;
+        }
+
+        .shifts-list::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .shifts-list::-webkit-scrollbar-track {
+            background: var(--highlight);
+        }
+
+        .shifts-list::-webkit-scrollbar-thumb {
+            background: var(--muted);
+            border-radius: 2px;
+        }
+
+        .shift-item {
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--border);
+            font-size: 12px;
+            color: var(--muted);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .shift-item:last-child {
+            border-bottom: none;
+        }
+
+        .shift-item:active {
+            background: var(--highlight);
+        }
+
+        .shift-item-delete {
+            background: #cc0000;
+            color: var(--text-color);
+            border: none;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .shift-item-delete:active {
+            opacity: 0.7;
+        }
     </style>
 </head>
 
@@ -630,6 +710,34 @@
         </div>
     </div>
 
+    <div id="export-modal" class="modal-overlay">
+        <div class="settings-content" id="export-box" style="max-width: 350px;">
+            <h2 id="export-title">Экспорт</h2>
+            <textarea id="export-textarea" class="export-textarea"></textarea>
+            <button class="save-btn" style="margin-top: 0; padding: 10px; font-size: 12px;" onclick="copyExportText()">
+                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                    <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                </svg>
+                Скопировать
+            </button>
+            <button class="save-btn secondary-btn" style="margin-top: 10px; padding: 10px; font-size: 12px;" onclick="closeExport()">
+                Закрыть
+            </button>
+        </div>
+    </div>
+
+    <div id="delete-modal" class="modal-overlay">
+        <div class="settings-content" id="delete-box" style="max-width: 350px;">
+            <h2>Удалить смену</h2>
+            <div class="shifts-list" id="shifts-list"></div>
+            <button class="save-btn secondary-btn" style="margin-top: 10px; padding: 10px; font-size: 12px;" onclick="closeDelete()">
+                Закрыть
+            </button>
+        </div>
+    </div>
+
     <div class="header-container">
         <h1 class="app-title" id="main-title">Смена</h1>
         <button class="settings-btn" onclick="openSettings()">
@@ -637,7 +745,7 @@
                 stroke-linejoin="round">
                 <circle cx="12" cy="12" r="3"></circle>
                 <path
-                    d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+                    d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65[...]
                 </path>
             </svg>
         </button>
@@ -752,6 +860,41 @@
                             Добавить прошлую
                         </button>
                     </div>
+
+                    <div style="display: flex; gap: 10px; margin-top: 10px;">
+                        <button class="save-btn secondary-btn" style="margin-top: 0; flex: 1; padding: 10px;"
+                            onclick="openExportAllData()">
+                            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2"
+                                fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            Экспорт все
+                        </button>
+                        <button class="save-btn secondary-btn" style="margin-top: 0; flex: 1; padding: 10px;"
+                            onclick="openExportNoTips()">
+                            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2"
+                                fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            Без чаевых
+                        </button>
+                        <button class="save-btn secondary-btn" style="margin-top: 0; flex: 1; padding: 10px;"
+                            onclick="openDeleteShift()">
+                            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2"
+                                fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="3 6 5 6 21 6"></polyline>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                <line x1="10" y1="11" x2="10" y2="17"></line>
+                                <line x1="14" y1="11" x2="14" y2="17"></line>
+                            </svg>
+                            Удалить
+                        </button>
+                    </div>
+
                     <div id="manual-form" class="manual-form">
                         <input type="date" id="manual-date">
                         <div style="display: flex; gap: 10px; margin-bottom: 10px;">
@@ -816,7 +959,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyD_JuiPhUpFqJdV4TA3e0MKhxTskNm71_w",
@@ -857,13 +1000,90 @@
             try { await setDoc(doc(db, "settings", "prices"), pricesConfig); btn.textContent = "Сохранено"; }
             catch (e) { btn.textContent = "Ошибка БД"; }
             setTimeout(() => {
-                btn.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Сохранить`;
+                btn.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>Сохранить`;
                 closeSettings();
             }, 1000);
             updatePricing(); calc(); if (currentPage > 0) generateReport();
         };
 
         document.getElementById('settings-box').addEventListener('touchstart', e => e.stopPropagation(), { passive: true });
+
+        // --- МОДАЛКИ ЭКСПОРТА ---
+        window.openExportAllData = () => {
+            const sorted = Object.entries(shiftDataCache).sort((a, b) => b[0].localeCompare(a[0]));
+            let text = 'ВСЕ ДОХОДЫ (С ЧАЕВЫМИ):\n\n';
+            let total = 0;
+            sorted.forEach(([date, data]) => {
+                text += `${date}: ${fmt(data.total)} ₸\n`;
+                total += data.total;
+            });
+            text += `\n━━━━━━━━━━━━━━━━━━━\nОБЩЕ: ${fmt(total)} ₸`;
+            document.getElementById('export-textarea').value = text;
+            document.getElementById('export-title').textContent = 'Экспорт все';
+            document.getElementById('export-modal').style.display = 'flex';
+        };
+
+        window.openExportNoTips = () => {
+            const sorted = Object.entries(shiftDataCache).sort((a, b) => b[0].localeCompare(a[0]));
+            let text = 'ДОХОДЫ БЕЗ ЧАЕВЫХ:\n\n';
+            let total = 0;
+            sorted.forEach(([date, data]) => {
+                const noTips = (data.total - (data.tips || 0));
+                text += `${date}: ${fmt(noTips)} ₸\n`;
+                total += noTips;
+            });
+            text += `\n━━━━━━━━━━━━━━━━━━━\nОБЩЕ: ${fmt(total)} ₸`;
+            document.getElementById('export-textarea').value = text;
+            document.getElementById('export-title').textContent = 'Экспорт без чаевых';
+            document.getElementById('export-modal').style.display = 'flex';
+        };
+
+        window.copyExportText = () => {
+            const textarea = document.getElementById('export-textarea');
+            textarea.select();
+            document.execCommand('copy');
+        };
+
+        window.closeExport = () => {
+            document.getElementById('export-modal').style.display = 'none';
+        };
+
+        // --- УДАЛЕНИЕ СМЕНЫ ---
+        window.openDeleteShift = () => {
+            const list = document.getElementById('shifts-list');
+            list.innerHTML = '';
+            const sorted = Object.entries(shiftDataCache).sort((a, b) => b[0].localeCompare(a[0]));
+            
+            if (sorted.length === 0) {
+                list.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--muted);">Смены не найдены</div>';
+            } else {
+                sorted.forEach(([date, data]) => {
+                    const div = document.createElement('div');
+                    div.className = 'shift-item';
+                    div.innerHTML = `
+                        <span>${date}: ${fmt(data.total)} ₸</span>
+                        <button class="shift-item-delete" onclick="deleteShift('${date}')">Удалить</button>
+                    `;
+                    list.appendChild(div);
+                });
+            }
+            document.getElementById('delete-modal').style.display = 'flex';
+        };
+
+        window.deleteShift = async (date) => {
+            try {
+                await deleteDoc(doc(db, "shifts", date));
+                delete shiftDataCache[date];
+                openDeleteShift();
+                if (currentPage > 0) generateReport();
+            } catch (e) {
+                alert('Ошибка при удалении');
+            }
+        };
+
+        window.closeDelete = () => {
+            document.getElementById('delete-modal').style.display = 'none';
+        };
 
         // --- ЛОГИКА НАВИГАЦИИ (3 ЭКРАНА) ---
         let currentPage = 0;
@@ -901,6 +1121,8 @@
 
         function handleSwipe(endX, endY) {
             if (document.getElementById('settings-modal').style.display === 'flex') return;
+            if (document.getElementById('export-modal').style.display === 'flex') return;
+            if (document.getElementById('delete-modal').style.display === 'flex') return;
             const dX = endX - startX;
             if (Math.abs(dX) > 50 && Math.abs(dX) > Math.abs(endY - startY)) {
                 if (dX > 0 && currentPage > 0) switchPage(currentPage - 1);
@@ -978,7 +1200,7 @@
                     if (currentPage > 0) generateReport();
                 } catch (e) { btn.textContent = "Ошибка БД"; }
                 setTimeout(() => {
-                    btn.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg> Загрузить стату`;
+                    btn.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>Загрузить стату`;
                 }, 2000);
             } else {
                 alert("Формат строк не распознан. Используй: ДД.ММ.ГГГГ - Кальяны - Замены");
@@ -998,311 +1220,238 @@
                 }
                 p.scrollTop = Math.floor(REPEATS / 2) * (MAX_VALUE + 1) * ITEM_HEIGHT;
             });
-            hP.onscroll = () => handleScroll(hP, 'h'); rP.onscroll = () => handleScroll(rP, 'r');
+
+            document.getElementById('hookah-picker').addEventListener('scroll', updatePickers);
+            document.getElementById('replacement-picker').addEventListener('scroll', updatePickers);
         }
 
-        function handleScroll(p, t) {
-            const idx = Math.round(p.scrollTop / ITEM_HEIGHT);
-            const items = p.querySelectorAll('.picker-item');
-            items.forEach(i => i.classList.remove('active'));
-            if (items[idx]) {
-                items[idx].classList.add('active');
-                const val = parseInt(items[idx].dataset.value);
-                if (t === 'h') { if (lastHIdx !== idx && navigator.vibrate) navigator.vibrate(5); lastHIdx = idx; hookahCount = val; }
-                else { if (lastRIdx !== idx && navigator.vibrate) navigator.vibrate(5); lastRIdx = idx; replacementCount = val; }
-                calc();
+        function updatePickers() {
+            const hP = document.getElementById('hookah-picker'), rP = document.getElementById('replacement-picker');
+            const hIdx = Math.round(hP.scrollTop / ITEM_HEIGHT) % (MAX_VALUE + 1);
+            const rIdx = Math.round(rP.scrollTop / ITEM_HEIGHT) % (MAX_VALUE + 1);
+            if (hIdx !== lastHIdx || rIdx !== lastRIdx) {
+                lastHIdx = hIdx; lastRIdx = rIdx; hookahCount = hIdx; replacementCount = rIdx; updatePricing(); calc();
             }
         }
 
         function updatePricing() {
-            const n = new Date(); if (n.getHours() < 15) n.setDate(n.getDate() - 1);
-            shiftDateStr = n.toISOString().split('T')[0];
-            const isW = [5, 6, 0].includes(n.getDay());
-            currentHookahPrice = isW ? pricesConfig.we_h : pricesConfig.wd_h;
-            currentReplacementPrice = isW ? pricesConfig.we_r : pricesConfig.wd_r;
-            const ds = ["ВС", "ПН", "ВТ", "СР", "ЧТ", "ПТ", "СБ"];
-            document.getElementById('shift-status').textContent = `${shiftDateStr} | ${ds[n.getDay()]} | ${isW ? 'ВЫХОДНОЙ' : 'БУДНИЙ'} ТАРИФ`;
+            const weekDay = new Date(shiftDateStr).getDay();
+            const isWeekend = weekDay === 0 || weekDay === 6;
+            currentHookahPrice = isWeekend ? pricesConfig.we_h : pricesConfig.wd_h;
+            currentReplacementPrice = isWeekend ? pricesConfig.we_r : pricesConfig.wd_r;
         }
 
-        window.calc = function () {
+        function calc() {
+            const bonusPrice = hookahCount * currentHookahPrice + replacementCount * currentReplacementPrice;
             const tipsVal = parseInt(document.getElementById('tips-input').value) || 0;
-            const bonus = Math.round((hookahCount * currentHookahPrice + replacementCount * currentReplacementPrice) * 0.10);
-            finalSum = BASE_SALARY + bonus + tipsVal;
-            document.getElementById('bonus-price').textContent = fmt(bonus) + ' ₸';
+            finalSum = BASE_SALARY + bonusPrice + tipsVal;
+            document.getElementById('bonus-price').textContent = fmt(bonusPrice) + ' ₸';
             document.getElementById('total-price').textContent = fmt(finalSum) + ' ₸';
         }
 
-        // --- Аналитика ---
-        window.setFilter = (t) => {
-            document.querySelectorAll('.filter-btn').forEach(x => x.classList.remove('active'));
-            document.querySelectorAll(`.filter-btn[data-filter="${t}"]`).forEach(x => x.classList.add('active'));
-            currentFilter = t;
-            document.querySelectorAll('.custom-dates').forEach(el => el.style.display = t === 'custom' ? 'flex' : 'none');
-            if (t !== 'custom') generateReport();
+        function setDate(dateStr) {
+            shiftDateStr = dateStr;
+            const date = new Date(dateStr);
+            document.getElementById('shift-status').textContent = date.toLocaleDateString('ru-RU', { weekday: 'long', month: 'long', day: 'numeric' }).toUpperCase();
+            updatePricing();
+            calc();
         }
 
-        window.generateReport = () => {
-            // Собираем все уникальные даты из личных смен и смен бара
-            const allDatesSet = new Set([...Object.keys(shiftDataCache), ...Object.keys(barDataCache)]);
-            const dates = Array.from(allDatesSet).sort();
+        window.toggleManualForm = () => {
+            const form = document.getElementById('manual-form');
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        };
 
-            let target = []; const today = new Date(); today.setHours(0, 0, 0, 0);
-            if (currentFilter === 'all') target = dates;
-            else if (currentFilter === 'custom') {
-                const s = document.getElementById('date-start').value, e = document.getElementById('date-end').value;
-                if (!s || !e) return; target = dates.filter(d => d >= s && d <= e);
-            } else {
-                const back = parseInt(currentFilter);
-                for (let i = back - 1; i >= 0; i--) { const d = new Date(today); d.setDate(d.getDate() - i); target.push(d.toISOString().split('T')[0]); }
-            }
-            render(target);
-        }
+        window.saveManualShift = async () => {
+            const date = document.getElementById('manual-date').value;
+            const hookahs = parseInt(document.getElementById('manual-hookahs').value) || 0;
+            const replacements = parseInt(document.getElementById('manual-replacements').value) || 0;
+            const tips = parseInt(document.getElementById('manual-tips').value) || 0;
+            
+            if (!date) { alert('Выбери дату'); return; }
+            
+            const weekDay = new Date(date).getDay();
+            const isWeekend = weekDay === 0 || weekDay === 6;
+            const hPrice = isWeekend ? pricesConfig.we_h : pricesConfig.wd_h;
+            const rPrice = isWeekend ? pricesConfig.we_r : pricesConfig.wd_r;
+            const total = BASE_SALARY + hookahs * hPrice + replacements * rPrice + tips;
+            
+            try {
+                const obj = { total, hookahs, replacements, tips, timestamp: Date.now() };
+                await setDoc(doc(db, "shifts", date), obj);
+                shiftDataCache[date] = obj;
+                document.getElementById('manual-date').value = '';
+                document.getElementById('manual-hookahs').value = '';
+                document.getElementById('manual-replacements').value = '';
+                document.getElementById('manual-tips').value = '';
+                document.getElementById('manual-form').style.display = 'none';
+                generateReport();
+            } catch (e) { alert('Ошибка при сохранении'); }
+        };
 
-        function render(dates) {
-            // Личная стата
-            let total = 0, hookahs = 0, worked = 0, max = 1, tipsTotal = 0, bestDateStr = '-', bestDateMax = 0;
-
-            // Общая стата бара
-            let barTotalKassa = 0, barTotalH = 0, barTotalR = 0, maxBar = 1;
-
-            const chart = document.getElementById('trend-chart');
-            const chartBar = document.getElementById('bar-trend-chart');
-            const w = Math.max(chart.clientWidth || 360, dates.length * 45), hSvg = 140, pX = 25, pYT = 30, pYB = 30;
-            let pts = [], ptsBarLine = [], ptsBarPersLine = [], html = '', htmlBar = '';
-
-            dates.forEach(d => {
-                // 1. Считаем личную
-                if (shiftDataCache[d]) {
-                    worked++; total += shiftDataCache[d].total; hookahs += shiftDataCache[d].hookahs;
-                    tipsTotal += (shiftDataCache[d].tips || 0);
-                    if (shiftDataCache[d].total > max) max = shiftDataCache[d].total;
-                    if (shiftDataCache[d].total > bestDateMax) { bestDateMax = shiftDataCache[d].total; bestDateStr = d; }
-                }
-
-                // 2. Считаем Бар (Если нет общей, но есть личная - берем личную за основу)
-                const pData = shiftDataCache[d] || null;
-                const bData = barDataCache[d] || null;
-
-                let dayBarH = bData ? bData.hookahs : (pData ? pData.hookahs : 0);
-                let dayBarR = bData ? bData.replacements : (pData ? pData.replacements : 0);
-
-                const isW = [5, 6, 0].includes(new Date(d).getDay());
-                const pH = isW ? pricesConfig.we_h : pricesConfig.wd_h;
-                const pR = isW ? pricesConfig.we_r : pricesConfig.wd_r;
-
-                const dayBarKassa = (dayBarH * pH) + (dayBarR * pR);
-
-                if (dayBarH > 0 || dayBarR > 0) {
-                    barTotalH += dayBarH;
-                    barTotalR += dayBarR;
-                    barTotalKassa += dayBarKassa;
-                    if (dayBarKassa > maxBar) maxBar = dayBarKassa;
-                }
+        window.exportTipsToHookahs = () => {
+            const sorted = Object.entries(shiftDataCache).sort((a, b) => b[0].localeCompare(a[0]));
+            let text = 'ЭКСПОРТ ЧАЕВЫХ:\n\n';
+            let tipsTotal = 0;
+            sorted.forEach(([date, data]) => {
+                const tips = data.tips || 0;
+                text += `${date}: ${fmt(tips)} ₸\n`;
+                tipsTotal += tips;
             });
+            text += `\n━━━━━━━━━━━━━━━━━━━\nИТОГО: ${fmt(tipsTotal)} ₸`;
+            document.getElementById('export-textarea').value = text;
+            document.getElementById('export-title').textContent = 'Экспорт чаевых';
+            document.getElementById('export-modal').style.display = 'flex';
+        };
 
-            // Обновление цифр ЭКРАНА 1 (Личная)
-            document.getElementById('stat-shifts').textContent = worked;
-            document.getElementById('stat-hookahs').textContent = hookahs;
-            document.getElementById('stat-total').textContent = fmt(total) + ' ₸';
-            document.getElementById('stat-total-no-tips').textContent = fmt(total - tipsTotal) + ' ₸';
-            document.getElementById('stat-total-tips').textContent = fmt(tipsTotal) + ' ₸';
-            document.getElementById('stat-avg').textContent = worked ? fmt(Math.round(total / worked)) + ' ₸' : '0 ₸';
-            document.getElementById('stat-best-day').textContent = bestDateStr !== '-' ? new Date(bestDateStr).toLocaleDateString('ru-RU') : '-';
-
-            // Обновление цифр ЭКРАНА 2 (Бар)
-            document.getElementById('bar-stat-hookahs').textContent = barTotalH;
-            document.getElementById('bar-stat-replacements').textContent = barTotalR;
-            document.getElementById('bar-stat-total').textContent = fmt(barTotalKassa) + ' ₸';
-
-            if (!dates.length) { chart.innerHTML = ''; chartBar.innerHTML = ''; return; }
-
-            // РЕНДЕР ГРАФИКОВ
-            dates.forEach((d, i) => {
-                const isW = [5, 6, 0].includes(new Date(d).getDay());
-                const pH = isW ? pricesConfig.we_h : pricesConfig.wd_h;
-                const pR = isW ? pricesConfig.we_r : pricesConfig.wd_r;
-
-                const pData = shiftDataCache[d] || null;
-                const bData = barDataCache[d] || null;
-
-                // Личные данные точки
-                const valP = pData ? pData.total : 0;
-
-                // Данные бара для точки
-                let dayBarH = bData ? bData.hookahs : (pData ? pData.hookahs : 0);
-                let dayBarR = bData ? bData.replacements : (pData ? pData.replacements : 0);
-                const valB = (dayBarH * pH) + (dayBarR * pR);
-
-                const x = dates.length === 1 ? w / 2 : pX + (i * (w - 2 * pX) / (dates.length - 1));
-
-                // Y для личного графика
-                const yP = pYT + (hSvg - pYT - pYB) - (valP / max) * (hSvg - pYT - pYB);
-                pts.push(`${x},${yP}`);
-
-                // Y для графика Бара (масштаб по maxBar)
-                const yBar = pYT + (hSvg - pYT - pYB) - (valB / maxBar) * (hSvg - pYT - pYB);
-                const yBarPers = pYT + (hSvg - pYT - pYB) - (valP / maxBar) * (hSvg - pYT - pYB);
-                ptsBarLine.push(`${x},${yBar}`);
-                ptsBarPersLine.push(`${x},${yBarPers}`);
-
-                const short = d.split('-')[2] + '.' + d.split('-')[1];
-
-                // Точки для личного
-                if (valP === max && valP > 0) {
-                    html += `<circle cx="${x}" cy="${yP}" r="6" fill="black" stroke="var(--accent)" stroke-width="2" />`;
-                    html += `<text x="${x}" y="${yP - 12}" fill="var(--accent)" font-size="9" font-weight="bold" text-anchor="middle">MAX</text>`;
-                } else { html += `<circle cx="${x}" cy="${yP}" r="3" fill="black" stroke="white" stroke-width="2" />`; }
-                html += `<circle cx="${x}" cy="${yP}" r="20" fill="transparent" class="chart-node-hitbox" onclick="showTooltip(event,'${d}',${valP},${pData ? pData.hookahs : 0},${pData ? pData.replacements : 0})" />`;
-                html += `<text x="${x}" y="${hSvg - 10}" fill="var(--muted)" font-size="10" text-anchor="middle">${short}</text>`;
-
-                // Точки для Бара
-                htmlBar += `<circle cx="${x}" cy="${yBar}" r="3" fill="black" stroke="var(--bar-color)" stroke-width="2" />`;
-                htmlBar += `<circle cx="${x}" cy="${yBarPers}" r="3" fill="black" stroke="white" stroke-width="2" />`;
-                // Специальный тултип для двойного графика
-                htmlBar += `<circle cx="${x}" cy="${yBar}" r="25" fill="transparent" class="chart-node-hitbox" onclick="showBarTooltip(event,'${d}',${valB},${valP},${dayBarH},${dayBarR})" />`;
-                htmlBar += `<text x="${x}" y="${hSvg - 10}" fill="var(--muted)" font-size="10" text-anchor="middle">${short}</text>`;
-            });
-
-            chart.innerHTML = `<svg width="${w}" height="${hSvg}"><polyline points="${pts.join(' ')}" fill="none" stroke="white" stroke-width="2" />${html}</svg>`;
-
-            chartBar.innerHTML = `<svg width="${w}" height="${hSvg}">
-                <polyline points="${ptsBarLine.join(' ')}" fill="none" stroke="var(--bar-color)" stroke-width="2" />
-                <polyline points="${ptsBarPersLine.join(' ')}" fill="none" stroke="rgba(255,255,255,0.4)" stroke-dasharray="4" stroke-width="2" />
-                ${htmlBar}
-            </svg>`;
-
-            setTimeout(() => { chart.scrollLeft = chart.scrollWidth; chartBar.scrollLeft = chartBar.scrollWidth; }, 50);
-        }
-
-        window.showTooltip = (e, d, t, h, r) => {
-            e.stopPropagation();
-            const tt = document.getElementById('tooltip');
-            document.getElementById('tt-date').textContent = d;
-            document.getElementById('tt-total').textContent = fmt(t) + ' ₸';
-            document.getElementById('tt-total').style.color = "var(--text-color)";
-            document.getElementById('tt-details').innerHTML = `К: ${h} | З: ${r}`;
-
-            document.querySelectorAll('.active-node').forEach(el => el.remove());
-            const target = e.currentTarget;
-            const glow = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-            glow.setAttribute('cx', target.getAttribute('cx')); glow.setAttribute('cy', target.getAttribute('cy'));
-            glow.setAttribute('r', '8'); glow.setAttribute('fill', 'rgba(255,255,255,0.3)'); glow.setAttribute('class', 'active-node'); glow.style.pointerEvents = 'none';
-            target.parentNode.appendChild(glow);
-
-            const rct = target.getBoundingClientRect();
-            tt.style.left = rct.left + rct.width / 2 + 'px'; tt.style.top = rct.top + 'px';
-            tt.classList.add('visible');
-        }
-
-        window.showBarTooltip = (e, d, valB, valP, h, r) => {
-            e.stopPropagation();
-            const tt = document.getElementById('tooltip');
-            document.getElementById('tt-date').textContent = d;
-            document.getElementById('tt-total').textContent = fmt(valB) + ' ₸';
-            document.getElementById('tt-total').style.color = "var(--bar-color)";
-            document.getElementById('tt-details').innerHTML = `К: ${h} | З: ${r}<br><span style="color:white; font-size:10px;">Мой доход: ${fmt(valP)} ₸</span>`;
-
-            document.querySelectorAll('.active-node').forEach(el => el.remove());
-            const target = e.currentTarget;
-            const glow = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-            glow.setAttribute('cx', target.getAttribute('cx')); glow.setAttribute('cy', target.getAttribute('cy'));
-            glow.setAttribute('r', '8'); glow.setAttribute('fill', 'rgba(33, 150, 243, 0.3)'); glow.setAttribute('class', 'active-node'); glow.style.pointerEvents = 'none';
-            target.parentNode.appendChild(glow);
-
-            const rct = target.getBoundingClientRect();
-            tt.style.left = rct.left + rct.width / 2 + 'px'; tt.style.top = rct.top + 'px';
-            tt.classList.add('visible');
-        }
+        window.setFilter = (filter) => {
+            currentFilter = filter;
+            const buttons = document.querySelectorAll('.filter-btn');
+            buttons.forEach(b => b.classList.toggle('active', b.dataset.filter === filter));
+            
+            const customDates = document.querySelectorAll('.custom-dates');
+            customDates.forEach(cd => cd.style.display = filter === 'custom' ? 'flex' : 'none');
+            
+            generateReport();
+        };
 
         window.hideTooltip = () => {
             document.getElementById('tooltip').classList.remove('visible');
-            document.querySelectorAll('.active-node').forEach(el => el.remove());
         };
 
-        window.toggleManualForm = () => { const f = document.getElementById('manual-form'); f.style.display = f.style.display === 'block' ? 'none' : 'block'; }
-        window.saveManualShift = async () => {
-            const d = document.getElementById('manual-date').value;
-            const h = parseInt(document.getElementById('manual-hookahs').value) || 0;
-            const r = parseInt(document.getElementById('manual-replacements').value) || 0;
-            const tips = parseInt(document.getElementById('manual-tips').value) || 0;
-            if (!d) return;
-            const isW = [5, 6, 0].includes(new Date(d).getDay());
-            const hPrice = isW ? pricesConfig.we_h : pricesConfig.wd_h;
-            const rPrice = isW ? pricesConfig.we_r : pricesConfig.wd_r;
-            const total = BASE_SALARY + Math.round((h * hPrice + r * rPrice) * 0.10) + tips;
+        function getDateRange() {
+            const now = new Date();
+            let startDate;
 
-            const obj = { total, hookahs: h, replacements: r, tips, timestamp: Date.now() };
-            await setDoc(doc(db, "shifts", d), obj);
-            shiftDataCache[d] = obj;
-            if (currentPage > 0) generateReport(); toggleManualForm();
-
-            document.getElementById('manual-date').value = '';
-            document.getElementById('manual-hookahs').value = '';
-            document.getElementById('manual-replacements').value = '';
-            document.getElementById('manual-tips').value = '';
-        }
-
-        window.exportTipsToHookahs = () => {
-            const dates = Object.keys(shiftDataCache).sort();
-
-            let target = []; const today = new Date(); today.setHours(0, 0, 0, 0);
-            if (currentFilter === 'all') target = dates;
-            else if (currentFilter === 'custom') {
-                const s = document.getElementById('date-start').value, e = document.getElementById('date-end').value;
-                if (!s || !e) return; target = dates.filter(d => d >= s && d <= e);
-            } else {
-                const back = parseInt(currentFilter);
-                for (let i = back - 1; i >= 0; i--) { const d = new Date(today); d.setDate(d.getDate() - i); target.push(d.toISOString().split('T')[0]); }
+            if (currentFilter === 'custom') {
+                const s = document.getElementById('date-start').value;
+                const e = document.getElementById('date-end').value;
+                startDate = s ? new Date(s) : new Date();
+                const endDate = e ? new Date(e) : new Date();
+                return [new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate()), 
+                        new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate(), 23, 59, 59)];
             }
 
-            let text = "Отчет по чаевым:\n\n";
-            let totalTips = 0;
-            let totalPotentialHookahs = 0;
-            let hasData = false;
+            const days = currentFilter === 'all' ? 999999 : parseInt(currentFilter);
+            startDate = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+            return [new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate()), now];
+        }
 
-            target.forEach(d => {
-                const pData = shiftDataCache[d];
-                if (pData && pData.tips > 0) {
-                    hasData = true;
-                    const isW = [5, 6, 0].includes(new Date(d).getDay());
-                    const pH = isW ? pricesConfig.we_h : pricesConfig.wd_h;
-                    const hCount = pData.tips / pH;
+        async function generateReport() {
+            const [startDate, endDate] = getDateRange();
+            let totalIncome = 0, totalWithoutTips = 0, totalTips = 0, shiftsCount = 0, hooksTotal = 0, bestDay = null, bestDayVal = 0;
 
-                    totalTips += pData.tips;
-                    totalPotentialHookahs += hCount;
+            Object.entries(shiftDataCache).forEach(([date, data]) => {
+                const shiftDate = new Date(date);
+                if (shiftDate >= startDate && shiftDate <= endDate) {
+                    shiftsCount++;
+                    const tips = data.tips || 0;
+                    totalIncome += data.total;
+                    totalWithoutTips += data.total - tips;
+                    totalTips += tips;
+                    hooksTotal += data.hookahs || 0;
 
-                    const shortD = d.split('-')[2] + '.' + d.split('-')[1];
-                    text += `${shortD}  —  ${fmt(pData.tips)} ₸  |  ~${hCount.toFixed(1)} кал.\n`;
+                    if (data.total > bestDayVal) {
+                        bestDayVal = data.total;
+                        bestDay = date;
+                    }
                 }
             });
 
-            if (!hasData) {
-                alert("За выбранный период нет чаевых.");
-                return;
+            document.getElementById('stat-shifts').textContent = shiftsCount;
+            document.getElementById('stat-hookahs').textContent = hooksTotal;
+            document.getElementById('stat-avg').textContent = shiftsCount > 0 ? fmt(Math.floor(totalIncome / shiftsCount)) + ' ₸' : '0 ₸';
+            document.getElementById('stat-best-day').textContent = bestDay ? `${bestDay} (${fmt(bestDayVal)} ₸)` : '-';
+            document.getElementById('stat-total').textContent = fmt(totalIncome) + ' ₸';
+            document.getElementById('stat-total-no-tips').textContent = fmt(totalWithoutTips) + ' ₸';
+            document.getElementById('stat-total-tips').textContent = fmt(totalTips) + ' ₸';
+
+            drawChart('trend-chart', startDate, endDate, false);
+            
+            let barTotal = 0, barHookahs = 0, barReplacements = 0;
+            Object.entries(barDataCache).forEach(([date, data]) => {
+                const barDate = new Date(date);
+                if (barDate >= startDate && barDate <= endDate) {
+                    barHookahs += data.hookahs || 0;
+                    barReplacements += data.replacements || 0;
+                    barTotal += (data.hookahs || 0) * currentHookahPrice + (data.replacements || 0) * currentReplacementPrice;
+                }
+            });
+            document.getElementById('bar-stat-hookahs').textContent = barHookahs;
+            document.getElementById('bar-stat-replacements').textContent = barReplacements;
+            document.getElementById('bar-stat-total').textContent = fmt(barTotal) + ' ₸';
+            drawChart('bar-trend-chart', startDate, endDate, true);
+        }
+
+        function drawChart(chartId, startDate, endDate, isBarChart) {
+            const chart = document.getElementById(chartId);
+            chart.innerHTML = '';
+            const data = isBarChart ? barDataCache : shiftDataCache;
+            const dates = [];
+            const values = [];
+
+            let currentDate = new Date(startDate);
+            while (currentDate <= endDate) {
+                const dateStr = currentDate.toISOString().split('T')[0];
+                const item = data[dateStr];
+                dates.push(dateStr);
+                if (item) {
+                    if (isBarChart) {
+                        values.push((item.hookahs || 0) * currentHookahPrice + (item.replacements || 0) * currentReplacementPrice);
+                    } else {
+                        values.push(item.total || 0);
+                    }
+                } else {
+                    values.push(0);
+                }
+                currentDate.setDate(currentDate.getDate() + 1);
             }
 
-            text += `\n----------------------\n`;
-            text += `Итого чаевых: ${fmt(totalTips)} ₸\n`;
-            text += `Потенциальных кальянов: ~${totalPotentialHookahs.toFixed(1)} шт\n`;
+            const maxVal = Math.max(...values, 1);
+            const chartHeight = 140;
 
-            if (navigator.share) {
-                navigator.share({
-                    title: 'Отчет по чаевым',
-                    text: text
-                }).catch(console.error);
-            } else if (navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(text).then(() => {
-                    alert("Отчет скопирован в буфер обмена!\n\n" + text);
-                }).catch(() => {
-                    alert("Ваш отчет:\n\n" + text);
+            values.forEach((val, idx) => {
+                const barHeight = (val / maxVal) * (chartHeight - 20);
+                const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                svg.setAttribute('viewBox', '0 0 30 140');
+                svg.setAttribute('width', '30');
+                svg.setAttribute('height', '140');
+                svg.classList.add('chart-node-hitbox');
+
+                const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                rect.setAttribute('x', '5');
+                rect.setAttribute('y', 140 - barHeight - 10);
+                rect.setAttribute('width', '20');
+                rect.setAttribute('height', barHeight);
+                rect.setAttribute('fill', isBarChart ? '#2196f3' : '#ff9800');
+                rect.setAttribute('rx', '2');
+
+                svg.appendChild(rect);
+                svg.addEventListener('click', (e) => {
+                    const tooltip = document.getElementById('tooltip');
+                    tooltip.querySelector('#tt-date').textContent = dates[idx];
+                    tooltip.querySelector('#tt-total').textContent = fmt(val) + ' ₸';
+                    if (isBarChart) {
+                        tooltip.querySelector('#tt-details').textContent = `Кальяны: ${barDataCache[dates[idx]]?.hookahs || 0}, Замены: ${barDataCache[dates[idx]]?.replacements || 0}`;
+                    } else {
+                        tooltip.querySelector('#tt-details').textContent = `Кальяны: ${shiftDataCache[dates[idx]]?.hookahs || 0}, Замены: ${shiftDataCache[dates[idx]]?.replacements || 0}`;
+                    }
+                    tooltip.classList.add('visible');
+                    const rect = e.target.getBoundingClientRect();
+                    tooltip.style.left = (rect.left + rect.width / 2) + 'px';
+                    tooltip.style.top = (rect.top - 10) + 'px';
                 });
-            } else {
-                alert("Ваш отчет:\n\n" + text);
-            }
-        };
 
-        initPickers(); updatePricing(); fetchData();
+                chart.appendChild(svg);
+            });
+        }
+
+        initPickers();
+        const today = new Date().toISOString().split('T')[0];
+        setDate(today);
+        fetchData();
     </script>
+
 </body>
 
 </html>
