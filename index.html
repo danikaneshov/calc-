@@ -862,29 +862,29 @@
                     </div>
 
                     <div style="display: flex; gap: 10px; margin-top: 10px;">
-                        <button class="save-btn secondary-btn" style="margin-top: 0; flex: 1; padding: 10px;"
+                        <button class="save-btn secondary-btn" style="margin-top: 0; flex: 1; padding: 10px; font-size: 10px;"
                             onclick="openExportAllData()">
-                            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2"
+                            <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2"
                                 fill="none" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                                 <polyline points="7 10 12 15 17 10"></polyline>
                                 <line x1="12" y1="15" x2="12" y2="3"></line>
                             </svg>
-                            Экспорт все
+                            Все
                         </button>
-                        <button class="save-btn secondary-btn" style="margin-top: 0; flex: 1; padding: 10px;"
+                        <button class="save-btn secondary-btn" style="margin-top: 0; flex: 1; padding: 10px; font-size: 10px;"
                             onclick="openExportNoTips()">
-                            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2"
+                            <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2"
                                 fill="none" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                                 <polyline points="7 10 12 15 17 10"></polyline>
                                 <line x1="12" y1="15" x2="12" y2="3"></line>
                             </svg>
-                            Без чаевых
+                            Без чаев
                         </button>
-                        <button class="save-btn secondary-btn" style="margin-top: 0; flex: 1; padding: 10px;"
+                        <button class="save-btn secondary-btn" style="margin-top: 0; flex: 1; padding: 10px; font-size: 10px;"
                             onclick="openDeleteShift()">
-                            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2"
+                            <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2"
                                 fill="none" stroke-linecap="round" stroke-linejoin="round">
                                 <polyline points="3 6 5 6 21 6"></polyline>
                                 <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
@@ -1011,28 +1011,28 @@
         // --- МОДАЛКИ ЭКСПОРТА ---
         window.openExportAllData = () => {
             const sorted = Object.entries(shiftDataCache).sort((a, b) => b[0].localeCompare(a[0]));
-            let text = 'ВСЕ ДОХОДЫ (С ЧАЕВЫМИ):\n\n';
+            let text = '';
             let total = 0;
             sorted.forEach(([date, data]) => {
-                text += `${date}: ${fmt(data.total)} ₸\n`;
+                text += `${date}: ${fmt(data.hookahs || 0)} кал, ${fmt(data.replacements || 0)} зам → ${fmt(data.total)} ₸\n`;
                 total += data.total;
             });
-            text += `\n━━━━━━━━━━━━━━━━━━━\nОБЩЕ: ${fmt(total)} ₸`;
+            text += `\n━━━━━━━━━━━━━━━━━━━━━━━━\nОБЩЕ: ${fmt(total)} ₸`;
             document.getElementById('export-textarea').value = text;
-            document.getElementById('export-title').textContent = 'Экспорт все';
+            document.getElementById('export-title').textContent = 'Экспор�� все';
             document.getElementById('export-modal').style.display = 'flex';
         };
 
         window.openExportNoTips = () => {
             const sorted = Object.entries(shiftDataCache).sort((a, b) => b[0].localeCompare(a[0]));
-            let text = 'ДОХОДЫ БЕЗ ЧАЕВЫХ:\n\n';
+            let text = '';
             let total = 0;
             sorted.forEach(([date, data]) => {
                 const noTips = (data.total - (data.tips || 0));
-                text += `${date}: ${fmt(noTips)} ₸\n`;
+                text += `${date}: ${fmt(data.hookahs || 0)} кал, ${fmt(data.replacements || 0)} зам → ${fmt(noTips)} ₸\n`;
                 total += noTips;
             });
-            text += `\n━━━━━━━━━━━━━━━━━━━\nОБЩЕ: ${fmt(total)} ₸`;
+            text += `\n━━━━━━━━━━━━━━━━━━━━━━━━\nОБЩЕ: ${fmt(total)} ₸`;
             document.getElementById('export-textarea').value = text;
             document.getElementById('export-title').textContent = 'Экспорт без чаевых';
             document.getElementById('export-modal').style.display = 'flex';
@@ -1061,7 +1061,7 @@
                     const div = document.createElement('div');
                     div.className = 'shift-item';
                     div.innerHTML = `
-                        <span>${date}: ${fmt(data.total)} ₸</span>
+                        <span>${date}: ${fmt(data.hookahs || 0)} кал, ${fmt(data.replacements || 0)} зам</span>
                         <button class="shift-item-delete" onclick="deleteShift('${date}')">Удалить</button>
                     `;
                     list.appendChild(div);
@@ -1291,14 +1291,14 @@
 
         window.exportTipsToHookahs = () => {
             const sorted = Object.entries(shiftDataCache).sort((a, b) => b[0].localeCompare(a[0]));
-            let text = 'ЭКСПОРТ ЧАЕВЫХ:\n\n';
+            let text = '';
             let tipsTotal = 0;
             sorted.forEach(([date, data]) => {
                 const tips = data.tips || 0;
                 text += `${date}: ${fmt(tips)} ₸\n`;
                 tipsTotal += tips;
             });
-            text += `\n━━━━━━━━━━━━━━━━━━━\nИТОГО: ${fmt(tipsTotal)} ₸`;
+            text += `\n━━━━━━━━━━━━━━━━━━━━━━━━\nИТОГО: ${fmt(tipsTotal)} ₸`;
             document.getElementById('export-textarea').value = text;
             document.getElementById('export-title').textContent = 'Экспорт чаевых';
             document.getElementById('export-modal').style.display = 'flex';
